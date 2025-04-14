@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./Main/Dashboard";
 import Start from "../src/Components/Start";
-import LoginSignup from "./Components/LoginSignup"; // Import LoginSignup component
+import LoginSignup from "./Components/LoginSignup";
 
 const App = () => {
   return (
