@@ -1,0 +1,107 @@
+/* 🌌 Full-Page Background with Animated Overlay */
+.logmain * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;  /* Prevent horizontal overflow */
+}
+
+.logmain html, body {
+  height: 100%;
+  width: 100%;
+}
+
+.logmain {
+  position: absolute;  /* Take up the whole screen */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  background-size: cover;  /* Ensures the image covers the entire screen */
+  animation: fadeInBg 1s ease-in-out;
+}
+
+/* ✨ Smooth Fade-In Animation */
+@keyframes fadeInBg {
+  from { opacity: 0; transform: scale(1.05); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 💎 Glassmorphism Form Box */
+.logmain .formBox {
+  background: rgba(0, 0, 0, 0.7);  /* Darker background with higher opacity */
+  backdrop-filter: blur(15px);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Darker shadow for a stronger effect */
+  text-align: center;
+  width: 350px;
+  max-width: 100%; /* Prevents it from overflowing on smaller screens */
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  animation: slideIn 1s ease-in-out;
+}
+/* 
+
+/* 🔄 Slide-in Animation */
+@keyframes slideIn {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* 🎭 Form Inputs */
+.logmain .input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 16px;
+}
+
+
+/* ✨ Placeholder Styling */
+.logmain .input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+.logmain .title{
+  color: aliceblue;
+}
+
+/* 🔥 Glassy Button */
+.logmain .button {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.logmain .button:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+}
+
+/* 🔁 Toggle Link */
+.logmain .toggleText {
+  margin-top: 15px;
+  font-size: 14px;
+  color: white;
+}
+
+.logmain .toggleLink {
+  color: #4adede;
+  font-weight: bold;
+  cursor: pointer;
+}
