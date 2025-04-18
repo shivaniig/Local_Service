@@ -307,13 +307,13 @@ const Dashboard = () => {
                   <a href="#" className="hover:text-blue-200 transition-colors">
                     Home
                   </a>
-                  <a href="#" className="hover:text-blue-200 transition-colors">
+                  <a href="#services" className="hover:text-blue-200 transition-colors">
                     Services
                   </a>
-                  <a href="#" className="hover:text-blue-200 transition-colors">
+                  <a href="/about" className="hover:text-blue-200 transition-colors">
                     About
                   </a>
-                  <a href="#" className="hover:text-blue-200 transition-colors">
+                  <a href="about" className="hover:text-blue-200 transition-colors">
                     Contact
                   </a>
                 </div>
@@ -362,7 +362,7 @@ const Dashboard = () => {
                         Profile
                       </a>
                       <a
-                        href="#"
+                        href="/bookings"
                         className="block px-4 py-2 text-gray-800 hover:bg-blue-100"
                       >
                         My Bookings
@@ -417,7 +417,7 @@ const Dashboard = () => {
               <a href="#" className="block py-2 text-gray-800">
                 Services
               </a>
-              <a href="#" className="block py-2 text-gray-800">
+              <a href="/bookings" className="block py-2 text-gray-800">
                 Bookings
               </a>
               <a href="#" className="block py-2 text-gray-800">
@@ -512,7 +512,7 @@ const Dashboard = () => {
 
         {/* Services Section */}
         <section className="py-16 px-4">
-          <div className="container mx-auto">
+          <div className="container mx-auto" id="services">
             <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
               Our Services
             </h2>
@@ -912,7 +912,7 @@ const Dashboard = () => {
         <footer className="bg-gray-800 text-white py-12 px-4">
           <div className="container mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
+              <div id="about-section">
                 <h3 className="text-xl font-bold mb-4">Fixzy</h3>
                 <p className="text-gray-400">
                   Your trusted partner for all home service needs.
@@ -924,7 +924,7 @@ const Dashboard = () => {
                 <ul className="space-y-2">
                   <li>
                     <a
-                      href="#"
+                      href="/dash"
                       className="text-gray-400 hover:text-white transition-colors"
                     >
                       Home
@@ -932,7 +932,7 @@ const Dashboard = () => {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href="#services"
                       className="text-gray-400 hover:text-white transition-colors"
                     >
                       Services
@@ -940,7 +940,7 @@ const Dashboard = () => {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href="/about"
                       className="text-gray-400 hover:text-white transition-colors"
                     >
                       About Us
@@ -948,7 +948,7 @@ const Dashboard = () => {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href="#contact-section"
                       className="text-gray-400 hover:text-white transition-colors"
                     >
                       Contact
@@ -995,7 +995,7 @@ const Dashboard = () => {
                 </ul>
               </div>
 
-              <div>
+              <div id="contact-section">
                 <h4 className="font-semibold mb-4">Contact Us</h4>
                 <address className="text-gray-400 not-italic">
                   123 Service Road
