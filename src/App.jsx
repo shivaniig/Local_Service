@@ -1,61 +1,100 @@
-"use client"
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
-import { AuthProvider, useAuth } from "./Contexts/AuthContext"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { Toaster } from "react-hot-toast"
+import { AuthProvider } from "./Contexts/AuthContext"
 import { BookingProvider } from "./Contexts/BookingContext"
 import Layout from "./component/Layout"
-import LoginSignup from "./Components/LoginSignup"
-import Dashboard from "./Components/Dashboard"
-import MyBookings from "./component/MyBookings"
-//import Contact from "./pages/Contact"
-//import About from "./pages/About"
-import AdminDashboard from "./component/AdminDashboard"
-import "./index.css"
-import Start from "./Main/Start"
-import AboutUs from "./Components/AboutUs"
-
-// Protected route component
-// const ProtectedRoute = ({ children }) => {
-//   const { currentUser } = useAuth()
-
-//   if (!currentUser) {
-//     return <Navigate to="/dash" replace />
-//   }
-
-//   return children
-// }
-
-// Admin route component
-const AdminRoute = ({ children }) => {
-  const { currentUser, isAdmin } = useAuth()
-
-  if (!currentUser || !isAdmin) {
-    return <Navigate to="/dashboard" replace />
-  }
-
-  return children
-}
+import Start from "./Pages/Start"
+import Dashboard from "./Pages/Dashboard"
+// import ServiceDetails from "./Pages/ServiceDetails"
+// import BookingPage from "./Pages/BookingPage"
+import PaymentPage from "./Pages/PaymentPage"
+// import BookingSuccess from "./Pages/BookingSuccess"
+import MyBookings from "./Pages/MyBookings"
+import ContactPage from "./Pages/ContactPages"
+import AboutPage from "./Pages/AboutPages"
+import AdminDashboard from "./Pages/Admin/AdminDashboard"
+import AdminServices from "./Pages/Admin/AdminServices"
+// import AdminBookings from "./pages/Admin/AdminBookings"
+// import AdminUsers from "./pages/admin/AdminUsers"
+// import NotFoundPage from "./pages/NotFoundPage"
+import ProtectedRoute from "./component/ProtectedRoutes"
+import AdminRoute from "./component/AdminRoutes"
+import StripeCheckout from "./Pages/StripeCheckout"
+import CheckoutReturn from "./Pages/CheckoutReturn"
+import "./App.css"
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <BookingProvider>
+          <Toaster position="top-right" />
           <Routes>
-            {/* <Route path="/" element={<Start />} /> */}
-            <Route path="/" element={<Start/>}>
-              {/* <Route index element={<Navigate to="/dash" replace />} /> */}
-              <Route path="/dash" element={<Dashboard />} />
+            {/* Landing Page */}
+            <Route path="/" element={<Start />} />
+
+            {/* Main Layout with Header and Footer */}
+            <Route path="/" element={<Layout />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              {/* <Route path="service/:id" element={<ServiceDetails />} /> */}
+              <Route path="about" element={<AboutPage />} />
+              <Route path="contact" element={<ContactPage />} />
+
+              {/* Protected Routes */}
               <Route
-                path="/bookings"
+                path="bookings"
                 element={
-
-                  <MyBookings />
-
+                  <ProtectedRoute>
+                    <MyBookings />
+                  </ProtectedRoute>
                 }
               />
-              <Route path="/about" element={<AboutUs />} />
-              {/* <Route path="contact" element={<Contact />} />
-              <Route path="about" element={<About />} /> */}
+
+              {/* <Route
+                path="booking/:serviceId"
+                element={
+                  <ProtectedRoute>
+                    <BookingPage />
+                  </ProtectedRoute>
+                }
+              /> */}
+
+              <Route
+                path="payment/:bookingId"
+                element={
+                  <ProtectedRoute>
+                    <PaymentPage />
+                  </ProtectedRoute>
+                }
+              />
+                            <Route
+                path="checkout/:bookingId"
+                element={
+                  <ProtectedRoute>
+                    <StripeCheckout />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="return"
+                element={
+                  <ProtectedRoute>
+                    <CheckoutReturn />
+                  </ProtectedRoute>
+                }
+              />
+
+
+              <Route
+                path="booking-success/:bookingId"
+                element={
+                  <ProtectedRoute>
+                    <BookingSuccess />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin Routes */}
               <Route
                 path="admin"
                 element={
@@ -64,8 +103,36 @@ function App() {
                   </AdminRoute>
                 }
               />
+
+              <Route
+                path="admin/services"
+                element={
+                  <AdminRoute>
+                    <AdminServices />
+                  </AdminRoute>
+                }
+              />
+
+              <Route
+                path="admin/bookings"
+                element={
+                  <AdminRoute>
+                    <AdminBookings />
+                  </AdminRoute>
+                }
+              />
+
+              <Route
+                path="admin/users"
+                element={
+                  <AdminRoute>
+                    <AdminUsers />
+                  </AdminRoute>
+                }
+              />
             </Route>
-            <Route path="*" element={<Navigate to="/dash" replace />} />
+
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BookingProvider>
       </AuthProvider>
@@ -74,7 +141,3 @@ function App() {
 }
 
 export default App
-
-
-
-

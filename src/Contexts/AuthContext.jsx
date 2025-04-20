@@ -1,169 +1,11 @@
-import { createContext, useState, useContext, useEffect } from "react"
-import { toast } from "react-toastify"
+"use client"
 
-// Create the AuthContext
+import { createContext, useContext, useState, useEffect, useCallback } from "react"
+import axios from "axios"
+import toast from "react-hot-toast"
+import { API_URL } from "../Config/Constants"
+
 const AuthContext = createContext()
-
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Check if user is already logged in on component mount
-  useEffect(() => {
-    const token = localStorage.getItem("token")
-    const storedUser = localStorage.getItem("user")
-
-    if (token && storedUser) {
-      setUser(JSON.parse(storedUser))
-      setIsAuthenticated(true)
-    }
-    
-    setIsLoading(false)
-  }, [])
-
-  // Login function
-  const login = async (email, password) => {
-    try {
-      setIsLoading(true)
-      
-      // For demo purposes, we'll simulate a successful login
-      // In a real app, you would make an API call here
-      if (email && password) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Mock user data
-        const userData = {
-          id: "user123",
-          name: "John Doe",
-          email: email,
-          role: email.includes("admin") ? "admin" : "user",
-          avatar: null
-        }
-        
-        // Mock token
-        const token = "mock-jwt-token-" + Math.random().toString(36).substring(2)
-        
-        // Store in localStorage
-        localStorage.setItem("token", token)
-        localStorage.setItem("user", JSON.stringify(userData))
-        
-        // Update state
-        setUser(userData)
-        setIsAuthenticated(true)
-        
-        toast.success("Login successful!")
-        return { success: true }
-      } else {
-        toast.error("Invalid credentials")
-        return { success: false, message: "Invalid credentials" }
-      }
-    } catch (error) {
-      toast.error("Login failed")
-      return { success: false, message: "Login failed" }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Register function
-  const register = async (name, email, password) => {
-    try {
-      setIsLoading(true)
-      
-      // For demo purposes, we'll simulate a successful registration
-      // In a real app, you would make an API call here
-      if (name && email && password) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        
-        // Mock user data
-        const userData = {
-          id: "user" + Math.random().toString(36).substring(2),
-          name: name,
-          email: email,
-          role: "user",
-          avatar: null
-        }
-        
-        // Mock token
-        const token = "mock-jwt-token-" + Math.random().toString(36).substring(2)
-        
-        // Store in localStorage
-        localStorage.setItem("token", token)
-        localStorage.setItem("user", JSON.stringify(userData))
-        
-        // Update state
-        setUser(userData)
-        setIsAuthenticated(true)
-        
-        toast.success("Registration successful!")
-        return { success: true }
-      } else {
-        toast.error("Please fill all required fields")
-        return { success: false, message: "Please fill all required fields" }
-      }
-    } catch (error) {
-      toast.error("Registration failed")
-      return { success: false, message: "Registration failed" }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    setUser(null)
-    setIsAuthenticated(false)
-    toast.success("Logged out successfully")
-  }
-
-  // Update user profile
-  const updateProfile = async (userData) => {
-    try {
-      setIsLoading(true)
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Update user data
-      const updatedUser = { ...user, ...userData }
-      
-      // Store in localStorage
-      localStorage.setItem("user", JSON.stringify(updatedUser))
-      
-      // Update state
-      setUser(updatedUser)
-      
-      toast.success("Profile updated successfully!")
-      return { success: true }
-    } catch (error) {
-      toast.error("Failed to update profile")
-      return { success: false, message: "Failed to update profile" }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        isLoading,
-        login,
-        register,
-        logout,
-        updateProfile
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
-}
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -171,6 +13,146 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
+}
+
+export const AuthProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  // Set up axios defaults
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+    }
+
+    return () => {
+      delete axios.defaults.headers.common["Authorization"]
+    }
+  }, [])
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const token = localStorage.getItem("token")
+
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const response = await axios.get(`${API_URL}/api/auth/me`)
+        setCurrentUser(response.data.user)
+      } catch (err) {
+        console.error("Auth check failed:", err)
+        localStorage.removeItem("token")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuthStatus()
+  }, [])
+
+  // Login function
+  const login = async (email, password) => {
+    try {
+      setError("")
+      setLoading(true)
+
+      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password })
+      const { token, user } = response.data
+
+      localStorage.setItem("token", token)
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+
+      setCurrentUser(user)
+      toast.success("Logged in successfully!")
+
+      return user
+    } catch (err) {
+      const message = err.response?.data?.message || "Login failed"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Register function
+  const register = async (userData) => {
+    try {
+      setError("")
+      setLoading(true)
+
+      const response = await axios.post(`${API_URL}/api/auth/register`, userData)
+      const { token, user } = response.data
+
+      localStorage.setItem("token", token)
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+
+      setCurrentUser(user)
+      toast.success("Registration successful!")
+
+      return user
+    } catch (err) {
+      const message = err.response?.data?.message || "Registration failed"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Logout function
+  const logout = useCallback(() => {
+    localStorage.removeItem("token")
+    delete axios.defaults.headers.common["Authorization"]
+    setCurrentUser(null)
+    toast.success("Logged out successfully")
+  }, [])
+
+  // Update profile function
+  const updateProfile = async (userData) => {
+    try {
+      setError("")
+      setLoading(true)
+
+      const response = await axios.put(`${API_URL}/api/users/profile`, userData)
+
+      setCurrentUser(response.data.user)
+      toast.success("Profile updated successfully")
+
+      return response.data.user
+    } catch (err) {
+      const message = err.response?.data?.message || "Profile update failed"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Check if user is admin
+  const isAdmin = currentUser?.role === "admin"
+
+  const value = {
+    currentUser,
+    isAdmin,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+    updateProfile,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export default AuthContext

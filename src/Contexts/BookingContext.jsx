@@ -1,274 +1,12 @@
-import { createContext, useState, useContext } from "react"
-import { toast } from "react-toastify"
+"use client"
 
-// Create the BookingContext
+import { createContext, useContext, useState, useEffect } from "react"
+import axios from "axios"
+import toast from "react-hot-toast"
+import { useAuth } from "./AuthContext"
+import { API_URL } from "../Config/Constants"
+
 const BookingContext = createContext()
-
-// Sample data for demonstration - this would typically come from an API
-const sampleBookings = [
-  {
-    _id: "b001",
-    service: {
-      name: "Plumbing Service",
-      icon: "🔧",
-      color: "bg-blue-500",
-      price: 799,
-    },
-    date: new Date(Date.now() + 86400000), // Tomorrow
-    time: "10:00 AM - 12:00 PM",
-    address: "123 Main Street, Mumbai",
-    status: "confirmed",
-    isPaid: true,
-    paymentMethod: "online",
-  },
-  {
-    _id: "b002",
-    service: {
-      name: "Electrical Repair",
-      icon: "⚡",
-      color: "bg-yellow-500",
-      price: 599,
-    },
-    date: new Date(Date.now() + 172800000), // Day after tomorrow
-    time: "2:00 PM - 4:00 PM",
-    address: "456 Park Avenue, Mumbai",
-    status: "pending",
-    isPaid: false,
-  },
-  {
-    _id: "b003",
-    service: {
-      name: "Home Cleaning",
-      icon: "🧹",
-      color: "bg-green-500",
-      price: 499,
-    },
-    date: new Date(Date.now() - 86400000), // Yesterday
-    time: "9:00 AM - 1:00 PM",
-    address: "789 Lake View, Mumbai",
-    status: "completed",
-    isPaid: true,
-    paymentMethod: "cash",
-    review: {
-      rating: 4,
-      comment: "Great service, very thorough cleaning!",
-    },
-  },
-  {
-    _id: "b004",
-    service: {
-      name: "Furniture Assembly",
-      icon: "🪑",
-      color: "bg-purple-500",
-      price: 999,
-    },
-    date: new Date(Date.now() - 172800000), // Two days ago
-    time: "11:00 AM - 2:00 PM",
-    address: "101 Heights, Mumbai",
-    status: "cancelled",
-    isPaid: false,
-  },
-]
-
-export const BookingProvider = ({ children }) => {
-  const [currentBooking, setCurrentBooking] = useState(null)
-  const [bookings, setBookings] = useState(sampleBookings)
-  const [isLoading, setIsLoading] = useState(false)
-
-  // Simulate API calls with setTimeout
-  const createBooking = async (bookingData) => {
-    try {
-      setIsLoading(true)
-
-      // Simulate API call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const newBooking = {
-            _id: `b${Math.floor(Math.random() * 10000)}`,
-            ...bookingData,
-            status: "pending",
-            isPaid: bookingData.paymentMethod === "online",
-            createdAt: new Date(),
-          }
-
-          setBookings((prev) => [...prev, newBooking])
-          setCurrentBooking(newBooking)
-
-          toast.success("Booking created successfully")
-          resolve({ success: true, booking: newBooking })
-          setIsLoading(false)
-        }, 1000)
-      })
-    } catch (error) {
-      toast.error("Failed to create booking")
-      setIsLoading(false)
-      return { success: false, message: "Failed to create booking" }
-    }
-  }
-
-  const getUserBookings = async () => {
-    try {
-      setIsLoading(true)
-
-      // Simulate API call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({ success: true, bookings })
-          setIsLoading(false)
-        }, 1000)
-      })
-    } catch (error) {
-      toast.error("Failed to fetch bookings")
-      setIsLoading(false)
-      return { success: false, message: "Failed to fetch bookings" }
-    }
-  }
-
-  const getBookingById = async (bookingId) => {
-    try {
-      setIsLoading(true)
-
-      // Simulate API call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const booking = bookings.find((b) => b._id === bookingId)
-          if (booking) {
-            setCurrentBooking(booking)
-            resolve({ success: true, booking })
-          } else {
-            toast.error("Booking not found")
-            resolve({ success: false, message: "Booking not found" })
-          }
-          setIsLoading(false)
-        }, 500)
-      })
-    } catch (error) {
-      toast.error("Failed to fetch booking")
-      setIsLoading(false)
-      return { success: false, message: "Failed to fetch booking" }
-    }
-  }
-
-  const updateBookingStatus = async (bookingId, status) => {
-    try {
-      setIsLoading(true)
-
-      // Simulate API call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const updatedBookings = bookings.map((booking) =>
-            booking._id === bookingId ? { ...booking, status } : booking,
-          )
-
-          setBookings(updatedBookings)
-          const updatedBooking = updatedBookings.find((b) => b._id === bookingId)
-
-          if (currentBooking && currentBooking._id === bookingId) {
-            setCurrentBooking(updatedBooking)
-          }
-
-          toast.success(`Booking ${status} successfully`)
-          resolve({ success: true, booking: updatedBooking })
-          setIsLoading(false)
-        }, 800)
-      })
-    } catch (error) {
-      toast.error(`Failed to ${status} booking`)
-      setIsLoading(false)
-      return { success: false, message: `Failed to ${status} booking` }
-    }
-  }
-
-  const processPayment = async (bookingId, paymentDetails) => {
-    try {
-      setIsLoading(true)
-
-      // Simulate API call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const updatedBookings = bookings.map((booking) =>
-            booking._id === bookingId
-              ? {
-                  ...booking,
-                  isPaid: true,
-                  paymentMethod: paymentDetails.method,
-                  paymentDate: new Date(),
-                }
-              : booking,
-          )
-
-          setBookings(updatedBookings)
-          const updatedBooking = updatedBookings.find((b) => b._id === bookingId)
-
-          if (currentBooking && currentBooking._id === bookingId) {
-            setCurrentBooking(updatedBooking)
-          }
-
-          toast.success("Payment processed successfully")
-          resolve({ success: true, payment: { id: `pay_${Math.random().toString(36).substring(2, 10)}` } })
-          setIsLoading(false)
-        }, 1200)
-      })
-    } catch (error) {
-      toast.error("Payment processing failed")
-      setIsLoading(false)
-      return { success: false, message: "Payment processing failed" }
-    }
-  }
-
-  const addReview = async (bookingId, reviewData) => {
-    try {
-      setIsLoading(true)
-
-      // Simulate API call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const review = {
-            ...reviewData,
-            createdAt: new Date(),
-          }
-
-          const updatedBookings = bookings.map((booking) =>
-            booking._id === bookingId ? { ...booking, review } : booking,
-          )
-
-          setBookings(updatedBookings)
-          const updatedBooking = updatedBookings.find((b) => b._id === bookingId)
-
-          if (currentBooking && currentBooking._id === bookingId) {
-            setCurrentBooking(updatedBooking)
-          }
-
-          toast.success("Review submitted successfully")
-          resolve({ success: true, review })
-          setIsLoading(false)
-        }, 800)
-      })
-    } catch (error) {
-      toast.error("Failed to submit review")
-      setIsLoading(false)
-      return { success: false, message: "Failed to submit review" }
-    }
-  }
-
-  return (
-    <BookingContext.Provider
-      value={{
-        currentBooking,
-        bookings,
-        isLoading,
-        createBooking,
-        getUserBookings,
-        getBookingById,
-        updateBookingStatus,
-        processPayment,
-        addReview,
-      }}
-    >
-      {children}
-    </BookingContext.Provider>
-  )
-}
 
 export const useBooking = () => {
   const context = useContext(BookingContext)
@@ -276,6 +14,246 @@ export const useBooking = () => {
     throw new Error("useBooking must be used within a BookingProvider")
   }
   return context
+}
+
+export const BookingProvider = ({ children }) => {
+  const { currentUser } = useAuth()
+  const [bookings, setBookings] = useState([])
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  // Fetch services
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true)
+        const response = await axios.get(`${API_URL}/api/services`)
+        setServices(response.data.services)
+      } catch (err) {
+        console.error("Error fetching services:", err)
+        setError("Failed to load services")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchServices()
+  }, [])
+
+  // Fetch user bookings when user changes
+  useEffect(() => {
+    if (currentUser) {
+      fetchUserBookings()
+    } else {
+      setBookings([])
+    }
+  }, [currentUser])
+
+  // Fetch user bookings
+  const fetchUserBookings = async () => {
+    if (!currentUser) return
+
+    try {
+      setLoading(true)
+      const response = await axios.get(`${API_URL}/api/bookings/user`)
+      setBookings(response.data.bookings)
+    } catch (err) {
+      console.error("Error fetching bookings:", err)
+      setError("Failed to load bookings")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Create a new booking
+  const createBooking = async (bookingData) => {
+    try {
+      setLoading(true)
+
+      const response = await axios.post(`${API_URL}/api/bookings`, bookingData)
+
+      // Add the new booking to the state
+      setBookings((prev) => [...prev, response.data.booking])
+
+      toast.success("Booking created successfully")
+      return response.data.booking
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to create booking"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Get booking by ID
+  const getBookingById = async (bookingId) => {
+    try {
+      setLoading(true)
+
+      const response = await axios.get(`${API_URL}/api/bookings/${bookingId}`)
+      return response.data.booking
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to fetch booking"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Update booking status
+  const updateBookingStatus = async (bookingId, status) => {
+    try {
+      setLoading(true)
+
+      const response = await axios.put(`${API_URL}/api/bookings/${bookingId}/status`, { status })
+
+      // Update the booking in the state
+      setBookings((prev) => prev.map((booking) => (booking._id === bookingId ? response.data.booking : booking)))
+
+      toast.success(`Booking ${status} successfully`)
+      return response.data.booking
+    } catch (err) {
+      const message = err.response?.data?.message || `Failed to update booking status`
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Cancel booking
+  const cancelBooking = async (bookingId) => {
+    return updateBookingStatus(bookingId, "cancelled")
+  }
+
+  // Process payment with Stripe
+  const processPayment = async (bookingId, paymentMethodId) => {
+    try {
+      setLoading(true)
+
+      const response = await axios.post(`${API_URL}/api/payments/${bookingId}`, {
+        paymentMethodId,
+      })
+
+      // Update the booking in the state
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking._id === bookingId
+            ? {
+                ...booking,
+                isPaid: true,
+                paymentMethod: "online",
+                paymentDate: new Date(),
+              }
+            : booking,
+        ),
+      )
+
+      toast.success("Payment processed successfully")
+      return response.data
+    } catch (err) {
+      const message = err.response?.data?.message || "Payment processing failed"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Add review to a booking
+  const addReview = async (bookingId, reviewData) => {
+    try {
+      setLoading(true)
+
+      const response = await axios.post(`${API_URL}/api/bookings/${bookingId}/review`, reviewData)
+
+      // Update the booking in the state
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking._id === bookingId
+            ? {
+                ...booking,
+                review: response.data.review,
+              }
+            : booking,
+        ),
+      )
+
+      toast.success("Review submitted successfully")
+      return response.data.review
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to submit review"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Get all services
+  const getAllServices = () => {
+    return services
+  }
+
+  // Get service by ID
+  const getServiceById = async (serviceId) => {
+    try {
+      // Check if we already have the service in state
+      const existingService = services.find((s) => s._id === serviceId)
+      if (existingService) return existingService
+
+      // Otherwise fetch it
+      setLoading(true)
+      const response = await axios.get(`${API_URL}/api/services/${serviceId}`)
+      return response.data.service
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to fetch service"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Get services by category
+  const getServicesByCategory = (category) => {
+    if (category === "all") return services
+    return services.filter((service) => service.category === category)
+  }
+
+  // Get user bookings
+  const getUserBookings = () => {
+    return bookings
+  }
+
+  const value = {
+    bookings,
+    services,
+    loading,
+    error,
+    createBooking,
+    getBookingById,
+    updateBookingStatus,
+    cancelBooking,
+    processPayment,
+    addReview,
+    getAllServices,
+    getServiceById,
+    getServicesByCategory,
+    getUserBookings,
+    fetchUserBookings,
+  }
+
+  return <BookingContext.Provider value={value}>{children}</BookingContext.Provider>
 }
 
 export default BookingContext

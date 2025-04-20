@@ -1,30 +1,66 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import BgImage from "../assets/Bg.png";
+"use client"
+
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../Contexts/AuthContext"
+import toast from "react-hot-toast"
+import BgImage from "../assets/Bg.png"
 
 function Start() {
-  const [showLogin, setShowLogin] = useState(false);
-  const [isSignup, setIsSignup] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
-  const navigate = useNavigate();
+  const [showLogin, setShowLogin] = useState(false)
+  const [isSignup, setIsSignup] = useState(false)
+  const [formData, setFormData] = useState({ name: "", email: "", password: "" })
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+  const { login, register } = useAuth()
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
     if (isSignup && !formData.name) {
-      alert("Please enter your name");
-      return;
+      toast.error("Please enter your name")
+      return
     }
-    console.log(isSignup ? "Signing Up:" : "Logging In:", formData);
-    navigate("/dash");
-  };
+
+    try {
+      setLoading(true)
+
+      if (isSignup) {
+        // Register new user
+        const user = await register(formData)
+
+        // Navigate based on role
+        if (user.role === "admin") {
+          navigate("/admin")
+        } else {
+          navigate("/dashboard")
+        }
+      } else {
+        // Login existing user
+        const user = await login(formData.email, formData.password)
+
+        // Navigate based on role
+        if (user.role === "admin") {
+          navigate("/admin")
+        } else {
+          navigate("/dashboard")
+        }
+      }
+    } catch (error) {
+      console.error("Authentication error:", error)
+      // Toast notification is already handled in the auth context
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleFindServicesClick = () => {
-    setShowLogin(true);
-  };
+    setShowLogin(true)
+  }
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -46,9 +82,7 @@ function Start() {
             <h1 className="text-black text-4xl font-bold animate-float">
               Connect with Skilled Service Providers Today
             </h1>
-            <p className="text-black text-xl opacity-90 mt-4 animate-pulse">
-              TRUSTED LOCAL PROFESSIONALS
-            </p>
+            <p className="text-black text-xl opacity-90 mt-4 animate-pulse">TRUSTED LOCAL PROFESSIONALS</p>
             <button
               className="mt-6 px-6 py-3 rounded-full text-black text-xl bg-opacity-10 backdrop-blur-md border-2 border-white shadow-md transition-all transform hover:scale-110 hover:-translate-y-1 animate-bounce"
               onClick={handleFindServicesClick}
@@ -94,17 +128,15 @@ function Start() {
                 <button
                   type="submit"
                   className="w-full p-3 bg-blue-600 text-white rounded-lg transition-none hover:bg-blue-500"
+                  disabled={loading}
                 >
-                  {isSignup ? "Sign Up" : "Login"}
+                  {loading ? "Processing..." : isSignup ? "Sign Up" : "Login"}
                 </button>
               </form>
 
               <p className="text-white text-sm mt-4">
                 {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-                <span
-                  className="text-blue-400 cursor-pointer"
-                  onClick={() => setIsSignup(!isSignup)}
-                >
+                <span className="text-blue-400 cursor-pointer" onClick={() => setIsSignup(!isSignup)}>
                   {isSignup ? "Login" : "Sign Up"}
                 </span>
               </p>
@@ -152,7 +184,7 @@ function Start() {
         `}
       </style>
     </div>
-  );
+  )
 }
 
-export default Start;
+export default Start
