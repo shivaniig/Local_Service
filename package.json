@@ -23,6 +23,7 @@
     "framer-motion": "^12.6.5",
     "lucide-react": "^0.488.0",
     "mongoose": "^8.13.2",
+    "morgan": "^1.10.0",
     "razorpay": "^2.9.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

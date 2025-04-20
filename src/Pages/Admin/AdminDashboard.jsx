@@ -26,10 +26,10 @@ const AdminDashboard = () => {
         setLoading(true)
 
         // Fetch dashboard stats
-        const statsResponse = await axios.get(`${API_URL}/api/admin/stats`)
+        const statsResponse = await axios.get(`${VITE_API_URL}/api/admin/stats`)
 
         // Fetch recent bookings
-        const bookingsResponse = await axios.get(`${API_URL}/api/admin/bookings/recent`)
+        const bookingsResponse = await axios.get(`${VITE_API_URL}/api/admin/bookings/recent`)
 
         setStats(statsResponse.data)
         setRecentBookings(bookingsResponse.data.bookings)

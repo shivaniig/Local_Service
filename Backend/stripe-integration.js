@@ -8,7 +8,7 @@ const createCheckoutSession = async (priceId) => {
         },
       ],
       mode: 'payment',
-      return_url: `${process.env.FRONTEND_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
+      return_url: `${process.env.VITE_API_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
     });
   
     return { clientSecret: session.client_secret };

@@ -1,6 +1,6 @@
 const express = require("express")
 const router = express.Router()
-const { register, login, getMe } = require("../Controllers/Auth")
+const { register, login, getMe } = require("../Controllers/AuthController")
 const { protect } = require("../Middleware/Auth")
 
 router.post("/register", register)

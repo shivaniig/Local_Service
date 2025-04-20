@@ -1,11 +1,13 @@
+// Constants.js
+
 // API URL based on environment
-export const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080"
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5173";
 
 // Stripe publishable key
-export const STRIPE_PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLIC_KEY || "pk_test_your_key"
+export const STRIPE_PUBLIC_KEY = import.meta.env.STRIPE_PUBLIC_KEY || "pk_test_your_key";
 
 // Default location
-export const DEFAULT_LOCATION = "Mumbai, Maharashtra"
+export const DEFAULT_LOCATION = "Mumbai, Maharashtra";
 
 // Service categories
 export const SERVICE_CATEGORIES = [
@@ -14,7 +16,7 @@ export const SERVICE_CATEGORIES = [
   { id: "appliance", name: "Appliance Repair" },
   { id: "electronics", name: "Electronics" },
   { id: "cleaning", name: "Cleaning" },
-]
+];
 
 // Booking statuses
 export const BOOKING_STATUSES = {
@@ -22,10 +24,10 @@ export const BOOKING_STATUSES = {
   CONFIRMED: "confirmed",
   COMPLETED: "completed",
   CANCELLED: "cancelled",
-}
+};
 
 // Payment methods
 export const PAYMENT_METHODS = {
   ONLINE: "online",
   COD: "cod",
-}
+};

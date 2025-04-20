@@ -32,7 +32,7 @@ const AdminServices = () => {
   const fetchServices = async () => {
     try {
       setLoading(true)
-      const response = await axios.get(`${API_URL}/api/services/admin`)
+      const response = await axios.get(`${VITE_API_URL}/api/services/admin`)
       setServices(response.data.services)
     } catch (error) {
       console.error("Error fetching services:", error)
@@ -82,11 +82,11 @@ const AdminServices = () => {
 
     try {
       if (modalMode === "add") {
-        const response = await axios.post(`${API_URL}/api/services`, formData)
+        const response = await axios.post(`${VITE_API_URL}/api/services`, formData)
         setServices([...services, response.data.service])
         toast.success("Service added successfully")
       } else {
-        const response = await axios.put(`${API_URL}/api/services/${selectedService._id}`, formData)
+        const response = await axios.put(`${VITE_API_URL}/api/services/${selectedService._id}`, formData)
         setServices(services.map((s) => (s._id === selectedService._id ? response.data.service : s)))
         toast.success("Service updated successfully")
       }
@@ -100,7 +100,7 @@ const AdminServices = () => {
   const handleDeleteService = async (serviceId) => {
     if (window.confirm("Are you sure you want to delete this service?")) {
       try {
-        await axios.delete(`${API_URL}/api/services/${serviceId}`)
+        await axios.delete(`${VITE_API_URL}/api/services/${serviceId}`)
         setServices(services.filter((service) => service._id !== serviceId))
         toast.success("Service deleted successfully")
       } catch (error) {

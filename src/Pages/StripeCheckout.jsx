@@ -2,42 +2,77 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+// Safely load the Stripe publishable key from .env
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+
+// Debug check
+if (!stripeKey) {
+  console.error('❌ Stripe publishable key is missing from .env');
+}
+
+const stripePromise = loadStripe(stripeKey);
 
 const StripeCheckout = () => {
   const [clientSecret, setClientSecret] = useState('');
+  const [loading, setLoading] = useState(true);
   const { bookingId } = useParams();
 
   useEffect(() => {
     const fetchClientSecret = async () => {
-      const response = await fetch('/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId }),
-      });
-      const data = await response.json();
-      setClientSecret(data.clientSecret);
+      try {
+        const response = await fetch('/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookingId }),
+        });
+
+        const data = await response.json();
+
+        if (data?.clientSecret) {
+          setClientSecret(data.clientSecret);
+        } else {
+          console.error('❌ No clientSecret returned from backend:', data);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching client secret:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchClientSecret();
   }, [bookingId]);
 
   useEffect(() => {
-    if (clientSecret) {
-      const initializeCheckout = async () => {
+    const initializeCheckout = async () => {
+      if (clientSecret && stripePromise) {
         const stripe = await stripePromise;
+
+        if (!stripe) {
+          console.error('❌ Stripe failed to initialize.');
+          return;
+        }
+
         const checkout = await stripe.initEmbeddedCheckout({
           clientSecret,
         });
 
         checkout.mount('#checkout');
-      };
+      }
+    };
 
-      initializeCheckout();
-    }
+    initializeCheckout();
   }, [clientSecret]);
 
-  return <div id="checkout" />;
+  return (
+    <div>
+      {loading ? (
+        <p>Loading checkout...</p>
+      ) : (
+        <div id="checkout" />
+      )}
+    </div>
+  );
 };
 
 export default StripeCheckout;

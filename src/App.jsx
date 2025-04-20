@@ -34,7 +34,7 @@ function App() {
             <Route path="/" element={<Start />} />
 
             {/* Main Layout with Header and Footer */}
-            <Route path="/" element={<Layout />}>
+            <Route path="/lay" element={<Layout />}>
               <Route path="dashboard" element={<Dashboard />} />
               {/* <Route path="service/:id" element={<ServiceDetails />} /> */}
               <Route path="about" element={<AboutPage />} />
@@ -85,14 +85,14 @@ function App() {
               />
 
 
-              <Route
+              {/* <Route
                 path="booking-success/:bookingId"
                 element={
                   <ProtectedRoute>
                     <BookingSuccess />
                   </ProtectedRoute>
                 }
-              />
+              /> */}
 
               {/* Admin Routes */}
               <Route
@@ -113,7 +113,7 @@ function App() {
                 }
               />
 
-              <Route
+              {/* <Route
                 path="admin/bookings"
                 element={
                   <AdminRoute>
@@ -129,10 +129,10 @@ function App() {
                     <AdminUsers />
                   </AdminRoute>
                 }
-              />
+              /> */}
             </Route>
 
-            <Route path="*" element={<NotFoundPage />} />
+            {/* <Route path="*" element={<NotFoundPage />} /> */}
           </Routes>
         </BookingProvider>
       </AuthProvider>
