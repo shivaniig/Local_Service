@@ -7,39 +7,40 @@ const path = require("path");
 
 dotenv.config(); // Load env variables first
 
-console.log("Stripe Secret Key:", process.env.STRIPE_SECRET_KEY);
-
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // Models
-const Service = require('./models/Service');
-const Booking = require('./models/Booking'); // Added booking model
+const Service = require("./models/Service");
+const Booking = require("./models/Booking"); // Added booking model
 
 // Import routes
 const authRoutes = require("./Routes/AuthRoutes");
 const userRoutes = require("./Routes/UserRoutes");
 const bookingRoutes = require("./Routes/BookingRoutes");
 const paymentRoutes = require("./Routes/PaymentRoutes");
-const serviceRoutes = require('./Routes/ServiceRoutes');
+const serviceRoutes = require("./Routes/ServiceRoutes");
 
 // Initialize express app
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: "http://localhost:8080",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: "http://localhost:8080",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(morgan("dev"));
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI || "your_backup_mongo_uri", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB connected"))
-.catch((err) => console.error("MongoDB connection error:", err));
+mongoose
+  .connect(process.env.MONGO_URI || "your_backup_mongo_uri", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -49,20 +50,20 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/payments", paymentRoutes);
 
 // Serve frontend in production
-if (process.env.NODE_ENV === "development") {
-  app.use(express.static(path.join(__dirname, "../frontend/build")));
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../build")));
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "../frontend/build", "index.html"));
+    res.sendFile(path.resolve(__dirname, "../build", "index.html"));
   });
 }
 
 // Service fetch route
-app.get('/api/services', async (req, res) => {
+app.get("/api/services", async (req, res) => {
   try {
     const services = await Service.find();
     res.status(200).json(services);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch services' });
+    res.status(500).json({ error: "Failed to fetch services" });
   }
 });
 
@@ -82,13 +83,13 @@ const getBookingDetails = async (bookingId) => {
 };
 
 // Stripe checkout session
-app.post('/create-checkout-session', async (req, res) => {
+app.post("/create-checkout-session", async (req, res) => {
   try {
     const { bookingId } = req.body;
 
     const bookingDetails = await getBookingDetails(bookingId);
     if (!bookingDetails) {
-      return res.status(404).json({ error: 'Booking not found' });
+      return res.status(404).json({ error: "Booking not found" });
     }
 
     const amount = bookingDetails.amount;
@@ -97,7 +98,7 @@ app.post('/create-checkout-session', async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: "usd",
             product_data: {
               name: `Booking #${bookingId}`,
             },
@@ -106,7 +107,7 @@ app.post('/create-checkout-session', async (req, res) => {
           quantity: 1,
         },
       ],
-      mode: 'payment',
+      mode: "payment",
       return_url: `http://localhost:8080/lay/return?session_id={CHECKOUT_SESSION_ID}`,
     });
 
