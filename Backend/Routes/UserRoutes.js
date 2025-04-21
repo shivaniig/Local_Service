@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // Assuming you have a User model for your user schema
+const User = require('../Models/User'); // Assuming you have a User model for your user schema
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 

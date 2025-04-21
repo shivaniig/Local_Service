@@ -1,6 +1,6 @@
-const User = require("../models/User")
-const asyncHandler = require("../middleware/async")
-const ErrorResponse = require("../utils/errorResponse")
+const User = require("../Models/User")
+const asyncHandler = require("../Middleware/Async")
+//const ErrorResponse = require("../utils/errorResponse")
 
 // @desc    Register user
 // @route   POST /api/auth/register

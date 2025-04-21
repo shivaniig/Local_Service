@@ -1,61 +1,62 @@
-const express = require("express")
-const mongoose = require("mongoose")
-const cors = require("cors")
-const dotenv = require("dotenv")
-const morgan = require("morgan")
-const path = require("path")
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const Service = require('./models/Service');
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const morgan = require("morgan");
+const path = require("path");
+
+dotenv.config(); // Load env variables first
 
 console.log("Stripe Secret Key:", process.env.STRIPE_SECRET_KEY);
 
-// Load environment variables
-require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// Models
+const Service = require('./models/Service');
+const Booking = require('./models/Booking'); // Added booking model
 
 // Import routes
-const authRoutes = require("./Routes/AuthRoutes")
-const userRoutes = require("./Routes/UserRoutes")
-const bookingRoutes = require("./Routes/BookingRoutes")
-const paymentRoutes = require("./Routes/PaymentRoutes")
+const authRoutes = require("./Routes/AuthRoutes");
+const userRoutes = require("./Routes/UserRoutes");
+const bookingRoutes = require("./Routes/BookingRoutes");
+const paymentRoutes = require("./Routes/PaymentRoutes");
+const serviceRoutes = require('./Routes/ServiceRoutes');
 
 // Initialize express app
-const app = express()
-app.use(cors());
-app.use(cors({
-  origin: "http://localhost:5174", // Allow requests from frontend
-  credentials: true, // If using cookies
-}));
+const app = express();
+
 // Middleware
-app.use(express.json())
-app.use(morgan("dev"))
-const serviceRoutes = require('./Routes/ServiceRoutes');
-app.use('/api', serviceRoutes);
+app.use(cors({
+  origin: "http://localhost:8080",
+  credentials: true,
+}));
+app.use(express.json());
+app.use(morgan("dev"));
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI || "mongodb+srv://shivanigs0210:Majorproject@cluster3.4nh1e.mongodb.net/?retryWrites=true&w=majority&appName=Cluster3", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err))
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI || "your_backup_mongo_uri", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log("MongoDB connected"))
+.catch((err) => console.error("MongoDB connection error:", err));
 
-// API Routes
-app.use("/api/auth", authRoutes)
-app.use("/api/users", userRoutes)
-app.use("/api/services", serviceRoutes)
-app.use("/api/bookings", bookingRoutes)
-app.use("/api/payments", paymentRoutes)
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/services", serviceRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/payments", paymentRoutes);
 
-if (process.env.NODE_ENV === "production") {
-  // Set static folder
+// Serve frontend in production
+if (process.env.NODE_ENV === "development") {
   app.use(express.static(path.join(__dirname, "../frontend/build")));
-
-  // Any route that is not an API route will be redirected to index.html
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../frontend/build", "index.html"));
   });
 }
+
+// Service fetch route
 app.get('/api/services', async (req, res) => {
   try {
     const services = await Service.find();
@@ -65,26 +66,32 @@ app.get('/api/services', async (req, res) => {
   }
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: "Server error",
-    error: process.env.NODE_ENV === "production" ? {} : err,
-  });
-});
+// Helper function to get booking details
+const getBookingDetails = async (bookingId) => {
+  try {
+    const booking = await Booking.findById(bookingId).populate("serviceId");
+    if (!booking) return null;
 
+    return {
+      amount: booking.totalAmount || 5000, // Fallback amount
+    };
+  } catch (error) {
+    console.error("Error fetching booking details:", error);
+    return null;
+  }
+};
+
+// Stripe checkout session
 app.post('/create-checkout-session', async (req, res) => {
   try {
     const { bookingId } = req.body;
-    const bookingDetails = await getBookingDetails(bookingId); // Assume this function is implemented
 
+    const bookingDetails = await getBookingDetails(bookingId);
     if (!bookingDetails) {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    const amount = bookingDetails.amount; // In dollars
+    const amount = bookingDetails.amount;
 
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -94,19 +101,29 @@ app.post('/create-checkout-session', async (req, res) => {
             product_data: {
               name: `Booking #${bookingId}`,
             },
-            unit_amount: amount * 100, // Convert to cents
+            unit_amount: amount * 100, // cents
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      return_url: "http://localhost:5173/return?session_id={CHECKOUT_SESSION_ID}",
+      return_url: `http://localhost:8080/lay/return?session_id={CHECKOUT_SESSION_ID}`,
     });
 
-    res.json({ clientSecret: session.client_secret });
+    res.json({ url: session.url }); // Send checkout URL
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: "Server error",
+    error: process.env.NODE_ENV === "development" ? err : {},
+  });
 });
 
 // Start server
