@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 
 // Safely load the Stripe publishable key from .env
-const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+const stripeKey = loadStripe('pk_test_51RFw9KFLdm8H3uLtVxpCoHglnX3MvNTKPtCMofkG7ahl4ICfdKnu27Fi3ruBnP853snSIeZAXM1PL2rgjjppzzzo00DGNVdbg7');
 
 // Debug check
 if (!stripeKey) {

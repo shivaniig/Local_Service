@@ -35,7 +35,7 @@ function App() {
 
             {/* Main Layout with Header and Footer */}
             <Route path="/lay" element={<Layout />}>
-              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="/dash" element={<Dashboard />} />
               {/* <Route path="service/:id" element={<ServiceDetails />} /> */}
               <Route path="about" element={<AboutPage />} />
               <Route path="contact" element={<ContactPage />} />

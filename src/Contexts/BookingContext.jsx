@@ -4,7 +4,6 @@ import { createContext, useContext, useState, useEffect } from "react"
 import axios from "axios"
 import toast from "react-hot-toast"
 import { useAuth } from "./AuthContext"
-import { API_URL } from "../Config/Constants"
 
 const BookingContext = createContext()
 
@@ -28,7 +27,7 @@ export const BookingProvider = ({ children }) => {
     const fetchServices = async () => {
       try {
         setLoading(true)
-        const response = await axios.get(`${API_URL}/api/services`)
+        const response = await axios.get("http://localhost:8080/api/services")
         setServices(response.data.services)
       } catch (err) {
         console.error("Error fetching services:", err)
@@ -56,7 +55,7 @@ export const BookingProvider = ({ children }) => {
 
     try {
       setLoading(true)
-      const response = await axios.get(`${API_URL}/api/bookings/user`)
+      const response = await axios.get("http://localhost:8080/api/bookings/user")
       setBookings(response.data.bookings)
     } catch (err) {
       console.error("Error fetching bookings:", err)
@@ -71,7 +70,7 @@ export const BookingProvider = ({ children }) => {
     try {
       setLoading(true)
 
-      const response = await axios.post(`${API_URL}/api/bookings`, bookingData)
+      const response = await axios.post("http://localhost:8080/api/bookings", bookingData)
 
       // Add the new booking to the state
       setBookings((prev) => [...prev, response.data.booking])
@@ -93,7 +92,7 @@ export const BookingProvider = ({ children }) => {
     try {
       setLoading(true)
 
-      const response = await axios.get(`${API_URL}/api/bookings/${bookingId}`)
+      const response = await axios.get(`http://localhost:8080/api/bookings/${bookingId}`)
       return response.data.booking
     } catch (err) {
       const message = err.response?.data?.message || "Failed to fetch booking"
@@ -110,7 +109,7 @@ export const BookingProvider = ({ children }) => {
     try {
       setLoading(true)
 
-      const response = await axios.put(`${API_URL}/api/bookings/${bookingId}/status`, { status })
+      const response = await axios.put(`http://localhost:8080/api/bookings/${bookingId}/status`, { status })
 
       // Update the booking in the state
       setBookings((prev) => prev.map((booking) => (booking._id === bookingId ? response.data.booking : booking)))
@@ -137,7 +136,7 @@ export const BookingProvider = ({ children }) => {
     try {
       setLoading(true)
 
-      const response = await axios.post(`${API_URL}/api/payments/${bookingId}`, {
+      const response = await axios.post(`http://localhost:8080/api/payments/${bookingId}`, {
         paymentMethodId,
       })
 
@@ -172,7 +171,7 @@ export const BookingProvider = ({ children }) => {
     try {
       setLoading(true)
 
-      const response = await axios.post(`${API_URL}/api/bookings/${bookingId}/review`, reviewData)
+      const response = await axios.post(`http://localhost:8080/api/bookings/${bookingId}/review`, reviewData)
 
       // Update the booking in the state
       setBookings((prev) =>
@@ -212,7 +211,7 @@ export const BookingProvider = ({ children }) => {
 
       // Otherwise fetch it
       setLoading(true)
-      const response = await axios.get(`${API_URL}/api/services/${serviceId}`)
+      const response = await axios.get(`http://localhost:8080/api/services/${serviceId}`)
       return response.data.service
     } catch (err) {
       const message = err.response?.data?.message || "Failed to fetch service"

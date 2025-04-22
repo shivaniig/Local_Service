@@ -9,7 +9,7 @@ import BgImage from "../assets/Bg.png"
 function Start() {
   const [showLogin, setShowLogin] = useState(false)
   const [isSignup, setIsSignup] = useState(false)
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" })
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "" })
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { login, register } = useAuth()
@@ -26,16 +26,21 @@ function Start() {
       return
     }
 
+    if (isSignup && !formData.role) {
+      toast.error("Please select a role")
+      return
+    }
+
     try {
       setLoading(true)
 
       if (isSignup) {
-        // Register new user
+        // Register new user with role
         const user = await register(formData)
 
         // Navigate based on role
         if (user.role === "admin") {
-          navigate("/admin")
+          navigate("admin")
         } else {
           navigate("/dashboard")
         }
@@ -47,7 +52,7 @@ function Start() {
         if (user.role === "admin") {
           navigate("/admin")
         } else {
-          navigate("/dashboard")
+          navigate("/dash")
         }
       }
     } catch (error) {
@@ -107,6 +112,7 @@ function Start() {
                     required
                   />
                 )}
+
                 <input
                   type="email"
                   name="email"
@@ -125,6 +131,22 @@ function Start() {
                   className="w-full p-3 rounded-lg border border-white bg-black text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
+                
+                {/* Role selection during signup */}
+                {isSignup && (
+                  <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    className="w-full p-3 rounded-lg border border-white bg-black text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User</option>
+                  </select>
+                )}
+                
                 <button
                   type="submit"
                   className="w-full p-3 bg-blue-600 text-white rounded-lg transition-none hover:bg-blue-500"

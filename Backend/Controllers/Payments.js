@@ -1,6 +1,6 @@
 const Booking = require("../models/Booking")
-const asyncHandler = require("../middleware/async")
-const ErrorResponse = require("../utils/errorResponse")
+const asyncHandler = require("../Middleware/Async")
+const ErrorResponse = require("../Utils/ErrorResponse")
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY || "sk_test_your_key")
 
 // @desc    Process payment for a booking

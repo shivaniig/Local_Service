@@ -6,14 +6,14 @@ const asyncHandler = require("../Middleware/Async")
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = asyncHandler(async (req, res, next) => {
-  const { name, email, password, phone } = req.body
+  const { name, email, password, role} = req.body
 
   // Create user
   const user = await User.create({
     name,
     email,
     password,
-    phone,
+    role,
   })
 
   sendTokenResponse(user, 201, res)
@@ -23,11 +23,11 @@ exports.register = asyncHandler(async (req, res, next) => {
 // @route   POST /api/auth/login
 // @access  Public
 exports.login = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body
+  const { email, password, role} = req.body
 
   // Validate email & password
-  if (!email || !password) {
-    return next(new ErrorResponse("Please provide an email and password", 400))
+  if (!email || !password || !role) {
+    return next(new ErrorResponse("Please provide an email, password and role", 400))
   }
 
   // Check for user

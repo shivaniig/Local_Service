@@ -1,7 +1,7 @@
 const Booking = require("../models/Booking")
 const Service = require("../models/Service")
-const asyncHandler = require("../middleware/async")
-const ErrorResponse = require("../utils/errorResponse")
+const asyncHandler = require("../Middleware/Async")
+const ErrorResponse = require("../Utils/ErrorResponse")
 
 // @desc    Get all bookings
 // @route   GET /api/bookings

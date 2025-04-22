@@ -1,7 +1,7 @@
 // Constants.js
 
 // API URL based on environment
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5173";
+export const API_URL = "http://localhost:8080";
 
 // Stripe publishable key
 export const STRIPE_PUBLIC_KEY = import.meta.env.STRIPE_PUBLIC_KEY || "pk_test_your_key";

@@ -123,7 +123,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(true)
 
       const response = await axios.put(`${API_URL}/api/users/profile`, userData)
-
       setCurrentUser(response.data.user)
       toast.success("Profile updated successfully")
 
