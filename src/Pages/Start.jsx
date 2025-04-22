@@ -1,64 +1,76 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { useAuth } from "../Contexts/AuthContext"
-import toast from "react-hot-toast"
-import BgImage from "../assets/Bg.png"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../Contexts/AuthContext";
+import toast from "react-hot-toast";
+import BgImage from "../assets/Bg.png";
 
 function Start() {
-  const [showLogin, setShowLogin] = useState(false)
-  const [isSignup, setIsSignup] = useState(false)
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "" })
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
-  const { login, register } = useAuth()
+  const [showLogin, setShowLogin] = useState(false);
+  const [isSignup, setIsSignup] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login, register } = useAuth();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (isSignup && !formData.name) {
-      toast.error("Please enter your name")
-      return
+      toast.error("Please enter your name");
+      return;
     }
 
     if (!formData.role) {
-      toast.error("Please select a role")
-      return
+      toast.error("Please select a role");
+      return;
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       if (isSignup) {
-        const user = await register(formData)
+        const user = await register(formData);
         if (user.role === "admin") {
-          navigate("/admin")
+          navigate("/admin");
         } else {
-          navigate("/dashboard")
+          navigate("/dashboard");
         }
       } else {
-        const user = await login(formData.email, formData.password, formData.role)
+
+
+        
+        const user = await login(
+          formData.email,
+          formData.password,
+          formData.role
+        );
         if (user.role === "admin") {
-          navigate("/admin")
+          navigate("/admin");
         } else {
-          navigate("/lay/dashboard")
+          navigate("/lay/dashboard");
         }
       }
     } catch (error) {
-      console.error("Authentication error:", error)
+      console.error("Authentication error:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleFindServicesClick = () => {
-    setShowLogin(true)
-  }
+    setShowLogin(true);
+  };
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -93,7 +105,9 @@ function Start() {
         ) : (
           <div className="flex justify-center items-center w-full h-full">
             <div className="relative p-6 max-w-sm w-full rounded-xl bg-black border border-white shadow-lg">
-              <h2 className="text-white text-2xl mb-4">{isSignup ? "Sign Up" : "Login"}</h2>
+              <h2 className="text-white text-2xl mb-4">
+                {isSignup ? "Sign Up" : "Login"}
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {isSignup && (
                   <input
@@ -150,8 +164,13 @@ function Start() {
               </form>
 
               <p className="text-white text-sm mt-4">
-                {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-                <span className="text-blue-400 cursor-pointer" onClick={() => setIsSignup(!isSignup)}>
+                {isSignup
+                  ? "Already have an account?"
+                  : "Don't have an account?"}{" "}
+                <span
+                  className="text-blue-400 cursor-pointer"
+                  onClick={() => setIsSignup(!isSignup)}
+                >
                   {isSignup ? "Login" : "Sign Up"}
                 </span>
               </p>
@@ -199,7 +218,7 @@ function Start() {
         `}
       </style>
     </div>
-  )
+  );
 }
 
-export default Start
+export default Start;
