@@ -26,7 +26,7 @@ function Start() {
       return
     }
 
-    if (isSignup && !formData.role) {
+    if (!formData.role) {
       toast.error("Please select a role")
       return
     }
@@ -35,29 +35,22 @@ function Start() {
       setLoading(true)
 
       if (isSignup) {
-        // Register new user with role
         const user = await register(formData)
-
-        // Navigate based on role
         if (user.role === "admin") {
-          navigate("admin")
+          navigate("/admin")
         } else {
           navigate("/dashboard")
         }
       } else {
-        // Login existing user
-        const user = await login(formData.email, formData.password)
-
-        // Navigate based on role
+        const user = await login(formData.email, formData.password, formData.role)
         if (user.role === "admin") {
           navigate("/admin")
         } else {
-          navigate("/dash")
+          navigate("/lay/dashboard")
         }
       }
     } catch (error) {
       console.error("Authentication error:", error)
-      // Toast notification is already handled in the auth context
     } finally {
       setLoading(false)
     }
@@ -69,13 +62,13 @@ function Start() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Background Image with Animation */}
+      {/* Background Image */}
       <div
         className="absolute top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat animate-bgfade"
         style={{ backgroundImage: `url(${BgImage})`, zIndex: -2 }}
       ></div>
 
-      {/* Animated overlay */}
+      {/* Overlay */}
       <div
         className="absolute top-0 left-0 w-full h-full bg-black opacity-20 animate-overlayfade"
         style={{ zIndex: -1 }}
@@ -87,7 +80,9 @@ function Start() {
             <h1 className="text-black text-4xl font-bold animate-float">
               Connect with Skilled Service Providers Today
             </h1>
-            <p className="text-black text-xl opacity-90 mt-4 animate-pulse">TRUSTED LOCAL PROFESSIONALS</p>
+            <p className="text-black text-xl opacity-90 mt-4 animate-pulse">
+              TRUSTED LOCAL PROFESSIONALS
+            </p>
             <button
               className="mt-6 px-6 py-3 rounded-full text-black text-xl bg-opacity-10 backdrop-blur-md border-2 border-white shadow-md transition-all transform hover:scale-110 hover:-translate-y-1 animate-bounce"
               onClick={handleFindServicesClick}
@@ -97,7 +92,6 @@ function Start() {
           </div>
         ) : (
           <div className="flex justify-center items-center w-full h-full">
-            {/* Login / Signup Card */}
             <div className="relative p-6 max-w-sm w-full rounded-xl bg-black border border-white shadow-lg">
               <h2 className="text-white text-2xl mb-4">{isSignup ? "Sign Up" : "Login"}</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -122,6 +116,7 @@ function Start() {
                   className="w-full p-3 rounded-lg border border-white bg-black text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
+
                 <input
                   type="password"
                   name="password"
@@ -131,22 +126,20 @@ function Start() {
                   className="w-full p-3 rounded-lg border border-white bg-black text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
-                
-                {/* Role selection during signup */}
-                {isSignup && (
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded-lg border border-white bg-black text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Select Role</option>
-                    <option value="admin">Admin</option>
-                    <option value="user">User</option>
-                  </select>
-                )}
-                
+
+                {/* Role field (shown in both login and signup) */}
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="w-full p-3 rounded-lg border border-white bg-black text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select Role</option>
+                  <option value="admin">Admin</option>
+                  <option value="user">User</option>
+                </select>
+
                 <button
                   type="submit"
                   className="w-full p-3 bg-blue-600 text-white rounded-lg transition-none hover:bg-blue-500"

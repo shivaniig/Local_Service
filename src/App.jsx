@@ -35,8 +35,8 @@ function App() {
 
             {/* Main Layout with Header and Footer */}
             <Route path="/lay" element={<Layout />}>
-              <Route path="/dash" element={<Dashboard />} />
-              {/* <Route path="service/:id" element={<ServiceDetails />} /> */}
+              {/* Nested Routes */}
+              <Route path="/lay/dashboard" element={<Dashboard />} />
               <Route path="about" element={<AboutPage />} />
               <Route path="contact" element={<ContactPage />} />
 
@@ -67,7 +67,8 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-                            <Route
+
+              <Route
                 path="checkout/:bookingId"
                 element={
                   <ProtectedRoute>
@@ -83,16 +84,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
-
-              {/* <Route
-                path="booking-success/:bookingId"
-                element={
-                  <ProtectedRoute>
-                    <BookingSuccess />
-                  </ProtectedRoute>
-                }
-              /> */}
 
               {/* Admin Routes */}
               <Route
@@ -113,7 +104,9 @@ function App() {
                 }
               />
 
-              {/* <Route
+              {/* Uncomment the Admin Routes if needed */}
+              {/* 
+              <Route
                 path="admin/bookings"
                 element={
                   <AdminRoute>
@@ -121,7 +114,7 @@ function App() {
                   </AdminRoute>
                 }
               />
-
+              
               <Route
                 path="admin/users"
                 element={
@@ -129,7 +122,8 @@ function App() {
                     <AdminUsers />
                   </AdminRoute>
                 }
-              /> */}
+              />
+              */}
             </Route>
 
             {/* <Route path="*" element={<NotFoundPage />} /> */}

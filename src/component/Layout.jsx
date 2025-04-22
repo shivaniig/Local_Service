@@ -30,7 +30,7 @@ const Layout = () => {
     <div className="layout-container">
       <header className="header">
         <div className="logo-container">
-          <Link to="/dashboard" className="logo">
+          <Link to="/lay/dashboard" className="logo">
             <div className="logo-icon">F</div>
             <span className="logo-text">Fixzy</span>
           </Link>
@@ -44,8 +44,8 @@ const Layout = () => {
           <ul className="nav-links">
             <li>
               <Link
-                to="/dashboard"
-                className={pathLocation.pathname === "/dashboard" ? "active" : ""}
+                to="/lay/dashboard"
+                className={pathLocation.pathname === "/lay/dashboard" ? "active" : ""}
                 onClick={closeMobileMenu}
               >
                 Home
@@ -85,7 +85,7 @@ const Layout = () => {
                 <div className="user-avatar">{currentUser.name.charAt(0).toUpperCase()}</div>
               </div>
               <div className="dropdown-menu">
-                <Link to="/dashboard" className="dropdown-item">
+                <Link to="/lay/dashboard" className="dropdown-item">
                   <FaHome /> Dashboard
                 </Link>
                 <Link to="/bookings" className="dropdown-item">
@@ -128,7 +128,7 @@ const Layout = () => {
             <h3>Quick Links</h3>
             <ul>
               <li>
-                <Link to="/dashboard">Home</Link>
+                <Link to="/lay/dashboard">Home</Link>
               </li>
               <li>
                 <Link to="/about">About Us</Link>
