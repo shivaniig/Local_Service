@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { AuthProvider } from "./Contexts/AuthContext"
 import { BookingProvider } from "./Contexts/BookingContext"
@@ -10,8 +10,8 @@ import Dashboard from "./Pages/Dashboard"
 import PaymentPage from "./Pages/PaymentPage"
 // import BookingSuccess from "./Pages/BookingSuccess"
 import MyBookings from "./Pages/MyBookings"
-import ContactPage from "./Pages/ContactPages"
-import AboutPage from "./Pages/AboutPages"
+import ContactPages from "./Pages/ContactPages"
+import AboutPages from "./Pages/AboutPages"
 import AdminDashboard from "./Pages/Admin/AdminDashboard"
 import AdminServices from "./Pages/Admin/AdminServices"
 // import AdminBookings from "./pages/Admin/AdminBookings"
@@ -21,6 +21,7 @@ import ProtectedRoute from "./component/ProtectedRoutes"
 import AdminRoute from "./component/AdminRoutes"
 import StripeCheckout from "./Pages/StripeCheckout"
 import CheckoutReturn from "./Pages/CheckoutReturn"
+import UserProfile from "./Pages/UserProfile"
 import "./App.css"
 
 function App() {
@@ -33,13 +34,20 @@ function App() {
             {/* Landing Page */}
             <Route path="/" element={<Start />} />
 
-            {/* Main Layout with Header and Footer */}
-            <Route path="/lay" element={<Layout />}>
-              {/* Nested Routes */}
-              <Route path="/lay/dashboard" element={<Dashboard />} />
-              <Route path="about" element={<AboutPage />} />
-              <Route path="contact" element={<ContactPage />} />
+            {/* Redirect to layout-based dashboard */}
+            <Route path="/dashboard" element={<Navigate to="/lay/dashboard" replace />} />
 
+            {/* Layout for nested routes */}
+            <Route path="/lay" element={<Layout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+
+              {/* Dashboard */}
+              <Route path="dashboard" element={<Dashboard />} />
+
+              {/* About & Contact */}
+              <Route path="about" element={<AboutPages />} />
+              <Route path="contact" element={<ContactPages />} />
+              <Route path="profile" element={<UserProfile />} />
               {/* Protected Routes */}
               <Route
                 path="bookings"
@@ -50,14 +58,16 @@ function App() {
                 }
               />
 
-              {/* <Route
+              {/* 
+              <Route
                 path="booking/:serviceId"
                 element={
                   <ProtectedRoute>
                     <BookingPage />
                   </ProtectedRoute>
                 }
-              /> */}
+              /> 
+              */}
 
               <Route
                 path="payment/:bookingId"
@@ -76,6 +86,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="return"
                 element={
@@ -104,7 +115,7 @@ function App() {
                 }
               />
 
-              {/* Uncomment the Admin Routes if needed */}
+              {/* Future Admin Routes */}
               {/* 
               <Route
                 path="admin/bookings"
@@ -126,7 +137,8 @@ function App() {
               */}
             </Route>
 
-            {/* <Route path="*" element={<NotFoundPage />} /> */}
+            {/* Catch-all: redirect to dashboard */}
+            <Route path="*" element={<Navigate to="/lay/dashboard" replace />} />
           </Routes>
         </BookingProvider>
       </AuthProvider>

@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require('../Models/User'); // Adjust path if needed
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const asyncHandler = require("../Middleware/Async")
+const { protect } = require('../Middleware/Auth');
 
 // ✅ Register User
 router.post('/register', async (req, res) => {
@@ -46,7 +48,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// ✅ Login User
 router.post('/login', async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -55,65 +56,84 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email, password, and role are required' });
     }
 
-    // Debugging: Check request body
-    console.log("📡 Request body:", { email, password, role });
-    console.log('User:', user);
-    console.log('Password:', user ? user.password : 'No password found');
-    
-    // Find user and explicitly select password
     const user = await User.findOne({ email }).select('+password');
-    
-    // Debugging: Check if user is found and if password is present
-    console.log("🧑‍💻 Found user:", user);
 
     if (!user) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    if (!user.password) {
-      return res.status(400).json({ error: 'Password is missing in the database' });
-    }
-
-    // Compare passwords
-    const isMatch = await user.matchPassword(password);
-    
+    // Compare the entered password with the hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Sign JWT and send the response
+    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, role: user.role },
-      process.env.JWT_SECRET_KEY,
+      process.env.JWT_SECRET,  // Ensure the JWT_SECRET is correct in your environment variables
       { expiresIn: '1h' }
     );
 
-    res.json({ message: 'Login successful', token, role: user.role });
+    // Send the token back to the client
+    res.json({
+      message: 'Login successful',
+      token,  // The token is being returned here
+      role: user.role,
+    });
   } catch (error) {
-    console.error("❌ Error in /login:", error);
-    console.log("Password from request body:", password);
+    console.error("Error during login:", error);
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 
 // ✅ Get User Profile
-router.get('/profile', async (req, res) => {
+// router.get("/profile", async (req, res) => {
+//   const token = req.headers.authorization?.split(" ")[1];
+//   if (!token) return res.status(401).json({ message: "No token provided" });
+
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const user = await User.findById(decoded.id).select("-password");
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     res.json(user);
+//   } catch (error) {
+//     res.status(401).json({ message: "Invalid token" });
+//   }
+// });
+exports.getUserProfile = asyncHandler(async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Authorization token is required' });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    const user = await User.findById(decoded.userId);
-
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    res.json({ name: user.name, email: user.email, role: user.role }); // Include role in profile response
-  } catch (error) {
-    console.error("❌ Error in /profile:", error);
-    res.status(500).json({ error: 'Server error' });
+    const user = req.user;  // The user is already populated by the `protect` middleware
+    res.status(200).json({
+      success: true,
+      data: user,  // Send the user data in the response
+    });
+  } catch (err) {
+    next(err); // Handle any errors
   }
 });
+
+// Route to fetch user profile (protected)
+router.get("/profile", protect, exports.getUserProfile);  // Use the protect middleware here
+
+router.post("/address", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "No token provided" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.address = req.body.address;
+    await user.save();
+    res.json({ message: "Address updated" });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid token" });
+  }
+});
+
 
 // ✅ Update User Profile
 router.put('/update', async (req, res) => {
@@ -150,7 +170,7 @@ router.delete('/delete', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Authorization token is required' });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.userId);
 
     if (!user) return res.status(404).json({ error: 'User not found' });

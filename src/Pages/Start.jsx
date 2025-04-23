@@ -17,6 +17,9 @@ function Start() {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
+  useEffect(() => {
+    console.log('Landing Page is rendered');
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -43,14 +46,21 @@ function Start() {
         }
       } else {
         const user = await login(formData.email, formData.password, formData.role)
+        
+        // Store the token and user data in localStorage
+        localStorage.setItem("token", user.token)
+        localStorage.setItem("user", JSON.stringify(user))
+
+        // Navigate based on user role
         if (user.role === "admin") {
           navigate("/admin")
         } else {
-          navigate("/lay/dashboard")
+          navigate("/dashboard")
         }
       }
     } catch (error) {
       console.error("Authentication error:", error)
+      toast.error("Authentication failed, please try again")
     } finally {
       setLoading(false)
     }

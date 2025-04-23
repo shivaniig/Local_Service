@@ -42,7 +42,36 @@ exports.login = asyncHandler(async (req, res, next) => {
       message: "user not found",
     });
   }
-
+  const protect = (req, res, next) => {
+    let token;
+    
+    // Check if token is in Authorization header
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      try {
+        // Get the token from header and remove 'Bearer ' part
+        token = req.headers.authorization.split(' ')[1];
+  
+        // Decode the token and get the user info (e.g., user ID)
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Ensure JWT_SECRET is correctly set
+        req.user = decoded.user; // Attach user data to the request
+        next();
+      } catch (err) {
+        console.error('Error verifying token:', err);
+        return res.status(401).json({
+          success: false,
+          message: 'Not authorized, token failed',
+        });
+      }
+    }
+  
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, no token',
+      });
+    }
+  };
+  
   // Check if password matches
   const isMatch = await user.matchPassword(password);
 

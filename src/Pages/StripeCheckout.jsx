@@ -10,7 +10,7 @@ if (!stripeKey) {
   console.error('❌ Stripe publishable key is missing from .env');
 }
 
-const stripePromise = loadStripe(stripeKey);
+const stripePromise = loadStripe('pk_test_51RFw9KFLdm8H3uLtVxpCoHglnX3MvNTKPtCMofkG7ahl4ICfdKnu27Fi3ruBnP853snSIeZAXM1PL2rgjjppzzzo00DGNVdbg7');
 
 const StripeCheckout = () => {
   const [clientSecret, setClientSecret] = useState('');

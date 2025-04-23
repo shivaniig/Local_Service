@@ -11,7 +11,7 @@ import {
 } from "react-icons/fa"
 import toast from "react-hot-toast"
 
-const ContactPage = () => {
+const ContactPages = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -49,67 +49,67 @@ const ContactPage = () => {
   }
 
   return (
-    <div className="contact-page">
-      <header className="contact-header">
-        <h1>Contact Us</h1>
-        <p>We'd love to hear from you. Get in touch!</p>
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      <header className="text-center mb-10">
+        <h1 className="text-4xl font-bold text-gray-800">Contact Us</h1>
+        <p className="text-gray-600 mt-2">We'd love to hear from you. Get in touch!</p>
       </header>
 
-      <main className="contact-container">
+      <main className="grid md:grid-cols-2 gap-10">
         {/* Left Info Section */}
-        <section className="contact-info">
-          <h2>Get In Touch</h2>
-          <p>Have questions about our services? Contact us via:</p>
+        <section className="space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-700">Get In Touch</h2>
+          <p className="text-gray-600">Have questions about our services? Contact us via:</p>
 
-          <div className="contact-methods">
+          <div className="space-y-6">
             {/* Phone */}
-            <div className="contact-method">
-              <div className="contact-icon"><FaPhone /></div>
+            <div className="flex items-start gap-4">
+              <div className="text-xl text-blue-600"><FaPhone /></div>
               <div>
-                <h3>Phone</h3>
-                <p>+91 9876543210</p>
-                <p>+91 9876543211</p>
+                <h3 className="font-semibold text-gray-700">Phone</h3>
+                <p className="text-gray-600">+91 9876543210</p>
+                <p className="text-gray-600">+91 9876543211</p>
               </div>
             </div>
 
             {/* Email */}
-            <div className="contact-method">
-              <div className="contact-icon"><FaEnvelope /></div>
+            <div className="flex items-start gap-4">
+              <div className="text-xl text-blue-600"><FaEnvelope /></div>
               <div>
-                <h3>Email</h3>
-                <p>info@fixzy.com</p>
-                <p>support@fixzy.com</p>
+                <h3 className="font-semibold text-gray-700">Email</h3>
+                <p className="text-gray-600">info@fixzy.com</p>
+                <p className="text-gray-600">support@fixzy.com</p>
               </div>
             </div>
 
             {/* Address */}
-            <div className="contact-method">
-              <div className="contact-icon"><FaMapMarkerAlt /></div>
+            <div className="flex items-start gap-4">
+              <div className="text-xl text-blue-600"><FaMapMarkerAlt /></div>
               <div>
-                <h3>Address</h3>
-                <p>123 Service Road, Andheri East</p>
-                <p>Mumbai, Maharashtra 400069</p>
+                <h3 className="font-semibold text-gray-700">Address</h3>
+                <p className="text-gray-600">123 Service Road, Andheri East</p>
+                <p className="text-gray-600">Mumbai, Maharashtra 400069</p>
               </div>
             </div>
           </div>
 
           {/* Social Icons */}
-          <div className="social-links">
-            <h3>Follow Us</h3>
-            <div className="social-icons">
-              <a href="#" className="social-icon"><FaFacebook /></a>
-              <a href="#" className="social-icon"><FaTwitter /></a>
-              <a href="#" className="social-icon"><FaInstagram /></a>
+          <div className="mt-6">
+            <h3 className="font-semibold text-gray-700 mb-2">Follow Us</h3>
+            <div className="flex gap-4 text-xl text-blue-500">
+              <a href="#" className="hover:text-blue-700"><FaFacebook /></a>
+              <a href="#" className="hover:text-blue-700"><FaTwitter /></a>
+              <a href="#" className="hover:text-blue-700"><FaInstagram /></a>
             </div>
           </div>
         </section>
 
         {/* Right Contact Form */}
-        <section className="contact-form-container">
-          <h2>Send Us a Message</h2>
-          <form onSubmit={handleSubmit} className="contact-form">
-            <div className="form-group">
-              <label htmlFor="name">Name *</label>
+        <section>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Send Us a Message</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name *</label>
               <input
                 type="text"
                 id="name"
@@ -117,11 +117,12 @@ const ContactPage = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
+                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="email">Email *</label>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email *</label>
               <input
                 type="email"
                 id="email"
@@ -129,33 +130,36 @@ const ContactPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
+                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="phone">Phone</label>
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
               <input
                 type="tel"
                 id="phone"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
+                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="subject">Subject</label>
+            <div>
+              <label htmlFor="subject" className="block text-sm font-medium text-gray-700">Subject</label>
               <input
                 type="text"
                 id="subject"
                 name="subject"
                 value={formData.subject}
                 onChange={handleChange}
+                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="message">Message *</label>
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message *</label>
               <textarea
                 id="message"
                 name="message"
@@ -163,10 +167,15 @@ const ContactPage = () => {
                 value={formData.message}
                 onChange={handleChange}
                 required
+                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
               ></textarea>
             </div>
 
-            <button type="submit" className="submit-button" disabled={loading}>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition"
+              disabled={loading}
+            >
               {loading ? "Sending..." : "Send Message"}
             </button>
           </form>
@@ -174,13 +183,13 @@ const ContactPage = () => {
       </main>
 
       {/* Map Section */}
-      <section className="map-container">
-        <h2>Our Location</h2>
-        <div className="map">
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold text-gray-700 text-center mb-4">Our Location</h2>
+        <div className="w-full h-[450px]">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d241317.11609823277!2d72.74109995709657!3d19.08219783958221!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c6306644edc1%3A0x5da4ed8f8d648c69!2sMumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1650721986071!5m2!1sen!2sin"
             width="100%"
-            height="450"
+            height="100%"
             style={{ border: 0 }}
             allowFullScreen=""
             loading="lazy"
@@ -192,4 +201,4 @@ const ContactPage = () => {
   )
 }
 
-export default ContactPage
+export default ContactPages

@@ -26,31 +26,29 @@ const UserSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
+ 
 });
 
 // Encrypt password using bcrypt
 UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    return next();
-  }
-
+  if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Match password in the User model
+// Match password
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Sign JWT and return
+// Sign JWT
 UserSchema.methods.getSignedJwtToken = function () {
-  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET || "fixzy_secret_key", {
-    expiresIn: process.env.JWT_EXPIRE || "30d",
-  });
+  return jwt.sign(
+    { id: this._id, role: this.role },
+    process.env.JWT_SECRET || "fixzy_secret_key",
+    { expiresIn: process.env.JWT_EXPIRE || "30d" }
+  );
 };
 
-// Prevent overwriting of the User model if it already exists
 const User = mongoose.models.User || mongoose.model("User", UserSchema);
-
 module.exports = User;
