@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { useEffect, useState} from "react"
+import { Link, useNavigate } from "react-router-dom"
 import {
   MapPin,
   Search,
@@ -156,6 +156,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [showBookingModal, setShowBookingModal] = useState(false)
+  const navigate = useNavigate();
 
   // Get auth context
   const { currentUser } = useAuth()
@@ -265,6 +266,8 @@ export default function Dashboard() {
   const handleBookService = (service) => {
     setSelectedService(service)
     setShowBookingModal(true)
+    navigate('/lay/servicebooking');
+    
 
     // Set default date to tomorrow
     const tomorrow = new Date()

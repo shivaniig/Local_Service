@@ -23,6 +23,7 @@ import StripeCheckout from "./Pages/StripeCheckout"
 import CheckoutReturn from "./Pages/CheckoutReturn"
 import UserProfile from "./Pages/UserProfile"
 import "./App.css"
+import ServiceBooking from "./component/ServiceBooking"
 
 function App() {
   return (
@@ -48,6 +49,22 @@ function App() {
               <Route path="about" element={<AboutPages />} />
               <Route path="contact" element={<ContactPages />} />
               <Route path="profile" element={<UserProfile />} />
+              <Route
+                path="admin"
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="servicebooking"
+                element={
+                  <ProtectedRoute>
+                    <ServiceBooking/>
+                  </ProtectedRoute>
+                }
+              />
               {/* Protected Routes */}
               <Route
                 path="bookings"
@@ -96,18 +113,9 @@ function App() {
                 }
               />
 
-              {/* Admin Routes */}
-              <Route
-                path="admin"
-                element={
-                  <AdminRoute>
-                    <AdminDashboard />
-                  </AdminRoute>
-                }
-              />
 
               <Route
-                path="admin/services"
+                path="adminservices"
                 element={
                   <AdminRoute>
                     <AdminServices />

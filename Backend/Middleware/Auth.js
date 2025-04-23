@@ -1,53 +1,72 @@
-const jwt = require("jsonwebtoken");
-const asyncHandler = require("./Async");
-const ErrorResponse = require("../Utils/ErrorResponse");
-const User = require("../Models/User");
+const jwt = require('jsonwebtoken');
+const User = require('../Models/User');
+const asyncHandler = require('./Async');
+const ErrorResponse = require('../Utils/ErrorResponse');
 
-// Protect routes - Middleware for checking if the user is authenticated
-exports.protect = asyncHandler(async (req, res, next) => {
-  let token;
-
-  // Check if the request has the authorization header and it contains 'Bearer' token
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1]; // Extract token from 'Bearer <token>'
-  }
+exports.authenticateToken = async (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1]; // Get token from header
 
   if (!token) {
-    return next(new ErrorResponse("Not authorized to access this route", 401));
+    return res.status(401).json({ message: 'No token provided. Authorization denied.' });
   }
 
   try {
     // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Ensure JWT_SECRET is set properly in .env
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Ensure your JWT_SECRET is correct
+    req.user = decoded; // Attach the decoded user data (userId, role, etc.) to the request
 
-    // Get the user based on the decoded token (assuming the token contains userId)
-    req.user = await User.findById(decoded.userId); // Find user from the database based on userId
+    next(); // Call the next middleware/route handler
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    res.status(403).json({ message: 'Token is invalid or expired' });
+  }
+};
 
-    // If user is not found in DB
-    if (!req.user) {
-      return next(new ErrorResponse("User not found", 404));
+// Middleware to protect routes
+exports.protect = asyncHandler(async (req, res, next) => {
+  let token;
+
+  // Extract token from Authorization header (Bearer <token>)
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  // If token is not found
+  if (!token) {
+    return next(new ErrorResponse('Not authorized to access this route', 401));
+  }
+
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;  // Make sure userId is part of JWT payload
+
+    // Find the user in the database by userId
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new ErrorResponse('User not found', 404)); // User not found
     }
 
-    // Proceed to the next middleware or route handler
-    next();
+    // Attach user to request object so other middlewares or route handlers can access it
+    req.user = user;
+    next();  // Continue to the next middleware/handler
   } catch (err) {
-    console.log('Token verification failed:', err);
-    return next(new ErrorResponse("Not authorized to access this route", 401));
+    console.error('Token verification failed:', err.message);
+    return next(new ErrorResponse('Not authorized to access this route', 401));
   }
 });
 
-// Grant access to specific roles
+// Middleware to restrict access to specific roles
 exports.authorize = (...roles) => {
   return (req, res, next) => {
-    // Ensure the user object exists (populated by protect middleware)
-    if (!req.user) {
-      return next(new ErrorResponse("Not authorized to access this route", 401));
+    if (!req.user || !req.user.role) {
+      return next(new ErrorResponse('Not authorized to access this route', 401));
     }
 
-    // Check if the user's role is included in the allowed roles array
+    // Check if user's role matches one of the roles passed in
     if (!roles.includes(req.user.role)) {
       return next(
         new ErrorResponse(
@@ -57,6 +76,6 @@ exports.authorize = (...roles) => {
       );
     }
 
-    next();
+    next();  // Continue to the next middleware/handler if authorized
   };
 };

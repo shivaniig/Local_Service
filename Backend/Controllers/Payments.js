@@ -18,7 +18,7 @@ exports.processPayment = asyncHandler(async (req, res, next) => {
   }
 
   // Check if booking belongs to user
-  if (booking.user.toString() !== req.user.id && req.user.role !== "admin") {
+  if (booking.user.toString() !== req.user.userId && req.user.role !== "admin") {
     return next(new ErrorResponse(`Not authorized to process this payment`, 401))
   }
 

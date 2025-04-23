@@ -1,6 +1,45 @@
 const User = require("../Models/User");
 const asyncHandler = require("../Middleware/Async");
-//const ErrorResponse = require("../utils/errorResponse")
+const ErrorResponse = require("../Utils/ErrorResponse");
+const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+
+// @desc    Register user
+// @route   POST /api/auth/register
+// @access  Public
+exports.protect = asyncHandler(async (req, res, next) => {
+  let token;
+
+  // Extract token from Authorization header (Bearer <token>)
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  // If token is not found
+  if (!token) {
+    return next(new ErrorResponse('Not authorized to access this route', 401));
+  }
+
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new ErrorResponse('User not found', 404));
+    }
+
+    // Attach user to request
+    req.user = user;
+    next();
+  } catch (err) {
+    console.error('Token verification failed:', err.message);
+    return next(new ErrorResponse('Not authorized to access this route', 401));
+  }
+});
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -8,15 +47,26 @@ const asyncHandler = require("../Middleware/Async");
 exports.register = asyncHandler(async (req, res, next) => {
   const { name, email, password, role } = req.body;
 
+  // Validate role
+  if (!role || !["user", "admin", "moderator"].includes(role)) {
+    return next(new ErrorResponse('Please specify a valid role', 400));
+  }
+
+  // Check if user already exists
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return next(new ErrorResponse('User already exists', 400));
+  }
+
   // Create user
   const user = await User.create({
     name,
     email,
     password,
-    role,
+    role, // Include role here
   });
 
-  sendTokenResponse(user, 201, res);
+  sendTokenResponse(user, 201, res); // You need to define the sendTokenResponse function
 });
 
 // @desc    Login user
@@ -39,46 +89,17 @@ exports.login = asyncHandler(async (req, res, next) => {
   if (!user) {
     return res.status(401).json({
       success: false,
-      message: "user not found",
+      message: "User not found",
     });
   }
-  const protect = (req, res, next) => {
-    let token;
-    
-    // Check if token is in Authorization header
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      try {
-        // Get the token from header and remove 'Bearer ' part
-        token = req.headers.authorization.split(' ')[1];
-  
-        // Decode the token and get the user info (e.g., user ID)
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Ensure JWT_SECRET is correctly set
-        req.user = decoded.user; // Attach user data to the request
-        next();
-      } catch (err) {
-        console.error('Error verifying token:', err);
-        return res.status(401).json({
-          success: false,
-          message: 'Not authorized, token failed',
-        });
-      }
-    }
-  
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized, no token',
-      });
-    }
-  };
-  
+
   // Check if password matches
   const isMatch = await user.matchPassword(password);
 
   if (!isMatch) {
     return res.status(401).json({
       success: false,
-      message: "password didn't matched",
+      message: "Password didn't match",
     });
   }
 
@@ -89,7 +110,14 @@ exports.login = asyncHandler(async (req, res, next) => {
 // @route   GET /api/auth/me
 // @access  Private
 exports.getMe = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user._id); // Access user ID from request (populated by `protect` middleware)
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
 
   res.status(200).json({
     success: true,
@@ -97,7 +125,7 @@ exports.getMe = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Helper function to get token from model, create cookie and send response
+// Helper function to get token from model, create cookie, and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
   const token = user.getSignedJwtToken();

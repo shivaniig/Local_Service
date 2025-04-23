@@ -42,14 +42,14 @@ function Start() {
       if (isSignup) {
         const user = await register(formData);
         if (user.role === "admin") {
-          navigate("/admin");
+          navigate("/lay/admin");
         } else {
-          navigate("/dashboard");
+          navigate("/lay/dashboard");
         }
       } else {
         const user = await login(formData.email, formData.password, formData.role)
         if (user.role === "admin") {
-          navigate("/admin");
+          navigate("/lay/admin");
         } else {
           navigate("/lay/dashboard")
         }

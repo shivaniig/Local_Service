@@ -8,31 +8,64 @@ import toast from "react-hot-toast";
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [addressInput, setAddressInput] = useState("");
+  const [roleInput, setRoleInput] = useState(""); // Add state for role input
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Decode token function
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error("Error decoding token:", e);
+      return null;
+    }
+  };
+
+  // Fetch user profile
   useEffect(() => {
     const fetchUserProfile = async () => {
-      try {
-        const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+      const token = localStorage.getItem("token");
 
-        const response = await fetch("http://localhost:8080/api/user/profile", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`, // Send token in the Authorization header
-          },
+      if (!token) {
+        toast.error("No token found. Please log in.");
+        navigate("/login");
+        return;
+      }
+
+      const decoded = decodeToken(token);
+      if (decoded && decoded.exp * 1000 < Date.now()) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const res = await axios.get("http://localhost:8080/api/user/profile", {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setUserData(data.data); // Set the user data from the response
-          setLoading(false); // Set loading to false after data is fetched
+        setUserData(res.data.data);
+      } catch (err) {
+        console.error("❌ Error fetching user profile:", err);
+        setUserData(null);
+        if (err.response?.status === 404) {
+          toast.error("User not found");
+          localStorage.removeItem("token");
+          navigate("/login");
         } else {
-          console.error("Failed to fetch user profile");
-          setLoading(false);
+          toast.error("Something went wrong while loading profile");
         }
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -40,25 +73,43 @@ const Profile = () => {
     fetchUserProfile();
   }, [navigate]);
 
-  const handleAddressSubmit = async () => {
+  // Submit updated address and role
+  const handleProfileSubmit = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error("No token found. Please log in.");
+      navigate("/login");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:8080/api/user/address", 
-        { address: addressInput },
+        "http://localhost:8080/api/user/address",
+        { address: addressInput, role: roleInput }, // Include role in the request
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      setUserData((prevData) => ({
-        ...prevData,
+
+      toast.success("Profile updated successfully");
+      setUserData((prev) => ({
+        ...prev,
         address: addressInput,
+        role: roleInput, // Update role in the userData state
       }));
-      toast.success("Address updated successfully");
+
+      setAddressInput("");
+      setRoleInput(""); // Reset role input
     } catch (err) {
-      toast.error("Failed to update address");
+      console.error("Error updating profile:", err);
+      if (err.response?.status === 400) {
+        toast.error("Invalid data.");
+      } else {
+        toast.error("Failed to update profile.");
+      }
     }
   };
 
@@ -67,18 +118,31 @@ const Profile = () => {
   return (
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">My Profile</h1>
-
       <div className="bg-white rounded shadow p-4 space-y-4">
         <div>
           <p className="font-medium text-gray-700">Username:</p>
-          <p>{userData?.name}</p>
+          <p>{userData?.name || "N/A"}</p>
         </div>
-
         <div>
           <p className="font-medium text-gray-700">Email:</p>
-          <p>{userData?.email}</p>
+          <p>{userData?.email || "N/A"}</p>
         </div>
-
+        <div>
+          <p className="font-medium text-gray-700">Role:</p>
+          {userData?.role ? (
+            <p>{userData.role}</p>
+          ) : (
+            <div>
+              <input
+                type="text"
+                value={roleInput}
+                onChange={(e) => setRoleInput(e.target.value)}
+                placeholder="Enter your role"
+                className="mt-1 w-full rounded border p-2"
+              />
+            </div>
+          )}
+        </div>
         <div>
           <p className="font-medium text-gray-700">Address:</p>
           {userData?.address ? (
@@ -93,15 +157,14 @@ const Profile = () => {
                 className="mt-1 w-full rounded border p-2"
               />
               <button
-                onClick={handleAddressSubmit}
+                onClick={handleProfileSubmit}
                 className="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
               >
-                Save Address
+                Save Address & Role
               </button>
             </div>
           )}
         </div>
-
         <div>
           <p className="font-medium text-gray-700">Past Bookings:</p>
           <ul className="list-disc pl-5">

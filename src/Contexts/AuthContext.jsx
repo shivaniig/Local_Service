@@ -1,144 +1,148 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react"
-import axios from "axios"
-import toast from "react-hot-toast"
-import { API_URL } from "../Config/Constants"
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { API_URL } from "../Config/Constants";
 
-const AuthContext = createContext()
+const AuthContext = createContext();
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
-}
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Set up axios defaults
   useEffect(() => {
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token");
+    console.log("Token from localStorage:", token); // Debugging token
     if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
 
     return () => {
-      delete axios.defaults.headers.common["Authorization"]
-    }
-  }, [])
+      delete axios.defaults.headers.common["Authorization"];
+    };
+  }, []);
 
   // Check if user is already logged in
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
 
       if (!token) {
-        setLoading(false)
-        return
+        setLoading(false);
+        return;
       }
 
       try {
-        const response = await axios.get(`${API_URL}/api/auth/me`)
-        setCurrentUser(response.data.user)
+        const response = await axios.get("http://localhost:8080/api/auth/me");
+        console.log("User data from auth/me:", response.data); // Log user data
+        setCurrentUser(response.data.user);
       } catch (err) {
-        console.error("Auth check failed:", err)
-        localStorage.removeItem("token")
+        console.error("Auth check failed:", err);
+        localStorage.removeItem("token");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    checkAuthStatus()
-  }, [])
+    checkAuthStatus();
+  }, []);
 
   // Login function
-  const login = async (email, password,role) => {
+  const login = async (email, password, role) => {
     try {
-      setError("")
-      setLoading(true)
+      setError("");
+      setLoading(true);
 
-      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password ,role})
-      const { token, user } = response.data
+      const response = await axios.post("http://localhost:8080/api/auth/login", { email, password, role });
+      const { token, user } = response.data;
 
-      localStorage.setItem("token", token)
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+      console.log("Login Token:", token); // Debugging token
+      localStorage.setItem("token", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      setCurrentUser(user)
-      toast.success("Logged in successfully!")
+      setCurrentUser(user);
+      toast.success("Logged in successfully!");
 
-      return user
+      return user;
     } catch (err) {
-      const message = err.response?.data?.message || "Login failed"
-      setError(message)
-      toast.error(message)
-      throw err
+      const message = err.response?.data?.message || "Login failed";
+      setError(message);
+      toast.error(message);
+      throw err;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Register function
   const register = async (userData) => {
     try {
-      setError("")
-      setLoading(true)
+      setError("");
+      setLoading(true);
 
-      const response = await axios.post(`${API_URL}/api/auth/register`, userData)
-      const { token, user } = response.data
+      const response = await axios.post("http://localhost:8080/api/auth/register", userData);
+      const { token, user } = response.data;
 
-      localStorage.setItem("token", token)
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+      console.log("Register Token:", token); // Debugging token
+      localStorage.setItem("token", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      setCurrentUser(user)
-      toast.success("Registration successful!")
+      setCurrentUser(user);
+      toast.success("Registration successful!");
 
-      return user
+      return user;
     } catch (err) {
-      const message = err.response?.data?.message || "Registration failed"
-      setError(message)
-      toast.error(message)
-      throw err
+      const message = err.response?.data?.message || "Registration failed";
+      setError(message);
+      toast.error(message);
+      throw err;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Logout function
   const logout = useCallback(() => {
-    localStorage.removeItem("token")
-    delete axios.defaults.headers.common["Authorization"]
-    setCurrentUser(null)
-    toast.success("Logged out successfully")
-  }, [])
+    localStorage.removeItem("token");
+    delete axios.defaults.headers.common["Authorization"];
+    setCurrentUser(null);
+    toast.success("Logged out successfully");
+  }, []);
 
   // Update profile function
   const updateProfile = async (userData) => {
     try {
-      setError("")
-      setLoading(true)
+      setError("");
+      setLoading(true);
 
-      const response = await axios.put(`${API_URL}/api/users/profile`, userData)
-      setCurrentUser(response.data.user)
-      toast.success("Profile updated successfully")
+      const response = await axios.put("http://localhost:8080api/users/profile", userData);
+      setCurrentUser(response.data.user);
+      toast.success("Profile updated successfully");
 
-      return response.data.user
+      return response.data.user;
     } catch (err) {
-      const message = err.response?.data?.message || "Profile update failed"
-      setError(message)
-      toast.error(message)
-      throw err
+      const message = err.response?.data?.message || "Profile update failed";
+      setError(message);
+      toast.error(message);
+      throw err;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Check if user is admin
-  const isAdmin = currentUser?.role === "admin"
+  const isAdmin = currentUser?.role === "admin";
 
   const value = {
     currentUser,
@@ -149,9 +153,9 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateProfile,
-  }
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-export default AuthContext
+
+export default AuthContext;

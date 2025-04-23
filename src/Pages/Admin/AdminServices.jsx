@@ -32,7 +32,7 @@ const AdminServices = () => {
   const fetchServices = async () => {
     try {
       setLoading(true)
-      const response = await axios.get(`${VITE_API_URL}/api/services/admin`)
+      const response = await axios.get("http://localhost:8080/api/services/admin")
       setServices(response.data.services)
     } catch (error) {
       console.error("Error fetching services:", error)
