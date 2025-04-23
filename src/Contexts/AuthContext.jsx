@@ -57,40 +57,57 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   // Login function
-  const loginUser = async (email, password, role) => {
+  const login = async (email, password,role) => {
     try {
-      const response = await fetch("http://localhost:8080/api/user/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, role }),
-      });
-  
-      const data = await response.json();
-      
-      if (response.ok) {
-        // Store the token in localStorage
-        localStorage.setItem("token", data.token);
-        console.log("Token stored:", data.token);  // Log to check if the token is stored
-      } else {
-        console.log("Login failed:", data.error);
-      }
-    } catch (error) {
-      console.error("Error during login:", error);
+      setError("")
+      setLoading(true)
+
+      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password ,role})
+      const { token, user } = response.data
+
+      localStorage.setItem("token", token)
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+
+      setCurrentUser(user)
+      toast.success("Logged in successfully!")
+
+      return user
+    } catch (err) {
+      const message = err.response?.data?.message || "Login failed"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
     }
-  
-    const response = await fetch("http://localhost:8080/api/user/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password, role }),
-    });
-    
-    const data = await response.json();
-    console.log("Login response:", data);  // Check the response for the token
-    
+  }
+
+  // Register function
+  const register = async (userData) => {
+    try {
+      setError("")
+      setLoading(true)
+
+      const response = await axios.post(`${API_URL}/api/auth/register`, userData)
+      const { token, user } = response.data
+
+      localStorage.setItem("token", token)
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+
+      setCurrentUser(user)
+      toast.success("Registration successful!")
+
+      return user
+    } catch (err) {
+      const message = err.response?.data?.message || "Registration failed"
+      setError(message)
+      toast.error(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Logout function
   const logout = useCallback(() => {
     localStorage.removeItem("token")
