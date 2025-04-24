@@ -57,13 +57,13 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Fetch All Services
 app.get("/api/services", async (req, res) => {
   try {
     const services = await Service.find();
-    res.status(200).json(services);
+    res.status(200).json({ success: true, services });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch services" });
+    console.error("Error fetching services:", err);
+    res.status(500).json({ success: false, message: "Server error fetching services", error: err.message });
   }
 });
 

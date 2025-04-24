@@ -2,6 +2,7 @@
 
 import { useEffect, useState} from "react"
 import { Link, useNavigate } from "react-router-dom"
+import Logo1 from '../assets/LOGO1.png'
 import {
   MapPin,
   Search,
@@ -156,6 +157,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [showBookingModal, setShowBookingModal] = useState(false)
+  const [showThanksDialog, setShowThanksDialog] = useState(false);
   const navigate = useNavigate();
 
   // Get auth context
@@ -236,36 +238,29 @@ export default function Dashboard() {
   }, [])
 
   // Filter services by category
-  const filterServicesByCategory = (category) => {
-    setActiveCategory(category)
-
-    if (category === "all") {
-      // Try to get all services from context
-      const allServices = getAllServices()
-      if (allServices && allServices.length > 0) {
-        setServices(allServices)
-      } else {
-        // Fallback to sample data
-        setServices(sampleServices)
-      }
-      return
-    }
-
-    // Try to get filtered services from context
-    const filteredServices = getServicesByCategory(category)
-    if (filteredServices && filteredServices.length > 0) {
-      setServices(filteredServices)
+  const filterServices = (category) => {
+    setActiveCategory(category);
+    if (category === "View All") {
+      setFilteredServices(services);
     } else {
-      // Fallback to filtering sample data
-      const filtered = sampleServices.filter((service) => service.category === category || !service.category)
-      setServices(filtered)
+      const filtered = services.filter(
+        (service) => service.category.toLowerCase() === category.toLowerCase()
+      );
+      setFilteredServices(filtered);
     }
-  }
+  };
+  const filteredServices = services.filter((service) =>
+    service.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
+  // Function to handle reviewing a service
+  const handleReviewService = (service) => {
+    setSelectedService(service); // Set the selected service
+    setShowReviewModal(true); // Open the modal
+  };
   // Function to handle booking a service
   const handleBookService = (service) => {
-    setSelectedService(service)
-    setShowBookingModal(true)
+    setSelectedService(service); // Assign the entire service object to the state  
     navigate('/lay/servicebooking');
     
 
@@ -274,25 +269,19 @@ export default function Dashboard() {
     tomorrow.setDate(tomorrow.getDate() + 1)
     setBookingDate(tomorrow.toISOString().split("T")[0])
   }
-
-  // Function to handle reviewing a service
-  const handleReviewService = (service) => {
-    setSelectedService(service)
-    setShowReviewModal(true)
-  }
-
   // Function to submit a booking
   const handleSubmitBooking = () => {
     // In a real app, you would send this data to your backend
     console.log("Booking submitted:", {
-      service: selectedService,
+      serviceId: selectedService._id, // Log the service name dynamically
       date: bookingDate,
       time: bookingTime,
       paymentMethod,
       location,
-    })
+    });
+    
 
-    // Reset form and close modal
+    // Reset form and close modal 
     setBookingDate("")
     setBookingTime("")
     setPaymentMethod("online")
@@ -304,23 +293,24 @@ export default function Dashboard() {
 
   // Function to submit a review
   const handleSubmitReview = () => {
-    // In a real app, you would send this data to your backend
+    if (!reviewText.trim()) {
+      alert("Please provide a comment for your review.");
+      return;
+    }
+  
     console.log("Review submitted:", {
       serviceId: selectedService._id,
       rating: reviewRating,
       comment: reviewText,
-    })
-
-    // Reset form and close modal
-    setReviewText("")
-    setReviewRating(5)
-    setShowReviewModal(false)
-
-    // Show success message
-    alert("Thank you for your review!")
-  }
-
-
+    });
+  
+    // Reset form and modal state
+    setReviewText("");
+    setReviewRating(5);
+    setShowReviewModal(false); // Close the modal
+    setShowThanksDialog(true); // Open the "Thanks for the review" dialog
+  };
+  
   // Loading state
   if (isLoading) {
     return (
@@ -331,6 +321,7 @@ export default function Dashboard() {
     )
   }
 
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100">
       <header
@@ -340,9 +331,8 @@ export default function Dashboard() {
       >
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 text-lg font-bold text-white">
-              F
-            </div>
+          <img src={Logo1} alt="Fixzy Team" className="h-8 w-8 rounded-full shadow-lg" />
+
             <h1 className="text-xl font-bold text-gray-900">Fixzy</h1>
           </div>
 
@@ -377,10 +367,10 @@ export default function Dashboard() {
       </div>
       </div>
 
-            <button className="relative rounded-full p-2 text-gray-700 hover:bg-slate-100">
+            {/* <button className="relative rounded-full p-2 text-gray-700 hover:bg-slate-100">
               <Bell className="h-5 w-5" />
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
-            </button>
+            </button> */}
 
             <div className="relative">
               <button
@@ -457,7 +447,7 @@ export default function Dashboard() {
         {/* Category Tabs */}
         <section className="mb-8">
           <div className="flex flex-wrap justify-center gap-4">
-            <button
+            {/* <button
               onClick={() => filterServicesByCategory("all")}
               className={`rounded-full px-6 py-2 text-sm font-medium transition-colors ${
                 activeCategory === "all" ? "bg-blue-600 text-white" : "bg-slate-100 text-gray-700 hover:bg-slate-200"
@@ -493,65 +483,131 @@ export default function Dashboard() {
             >
               Cleaning
             </button>
+          </div> */}
           </div>
         </section>
 
-        {/* Services Section */}
-        <section className="mb-16">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">Popular Services</h2>
-            <button className="hidden items-center text-blue-600 hover:text-blue-700 md:flex">
-              View All <ArrowRight className="ml-1 h-4 w-4" />
-            </button>
+   {/* Services Section */}
+<section className="mb-16">
+  {/* Header */}
+  <div className="mb-8 flex items-center justify-between">
+    <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">Popular Services</h2>
+    <button className="hidden items-center text-blue-600 hover:text-blue-700 md:flex">
+      View All <ArrowRight className="ml-1 h-4 w-4" />
+    </button>
+  </div>
+
+  {/* Services Grid */}
+  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    {filteredServices.length > 0 ? (
+      filteredServices.map((service) => (
+        <div
+          key={service._id}
+          className="group overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+        >
+          {/* Service Header */}
+          <div
+            className={`flex h-24 items-center justify-between p-6 ${service.color || "bg-blue-500"} text-white`}
+          >
+            <span className="text-3xl">{service.icon || "🔧"}</span>
+            <div className="rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
+              {service.rating} ★
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {services.map((service) => (
-              <div
-                key={service._id}
-                className="group overflow-hidden rounded-lg border-none bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-              >
-                <div
-                  className={`flex h-24 items-center justify-between p-6 ${service.color || "bg-blue-500"} text-white`}
-                >
-                  <div>
-                    <span className="text-3xl">{service.icon || "🔧"}</span>
-                  </div>
-                  <div className="rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
-                    {service.rating} ★
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="mb-2 text-xl font-semibold text-gray-900">{service.name}</h3>
-                  <p className="mb-4 text-gray-600">{service.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">{service.reviews || 0}+ bookings</span>
-                    <div className="flex gap-2">
-                      <button
+          {/* Service Details */}
+          <div className="p-6">
+            <h3 className="mb-2 text-xl font-semibold text-gray-900">{service.name}</h3>
+            <p className="mb-4 text-gray-600">{service.description}</p>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">{service.reviews || 0}+ bookings</span>
+              <div className="flex gap-2">
+              <button
                         onClick={() => handleBookService(service)}
                         className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-gray-800 hover:bg-slate-200"
                       >
                         Book Now
                       </button>
-                      <button
-                        onClick={() => handleReviewService(service)}
-                        className="rounded-full bg-white border border-slate-200 px-3 py-1 text-sm font-medium text-gray-600 hover:bg-slate-50"
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                {/* Review Button */}
+                <button
+                  onClick={() => handleReviewService(service)}
+                  className="rounded-full bg-white border border-slate-200 px-3 py-1 text-sm font-medium text-gray-600 hover:bg-slate-50"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </button>
               </div>
-            ))}
+            </div>
           </div>
+        </div>
+      ))
+    ) : (
+      // Fallback for No Services
+      <p className="col-span-full mt-4 text-center text-red-600 font-medium">
+        Sorry, the service you're looking for is currently not available.
+      </p>
+    )}
+  </div>
 
-          <div className="mt-6 text-center md:hidden">
-            <button className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              View All Services
-            </button>
-          </div>
-        </section>
+  {/* Thanks Dialog */}
+  {showThanksDialog && (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded shadow-md">
+        <h2 className="text-lg font-bold">Thanks for the review!</h2>
+        <p className="mt-2">We appreciate your feedback for {selectedService?.name}.</p>
+        <button
+          onClick={() => setShowThanksDialog(false)}
+          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )}
+  {showReviewModal && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white p-6 rounded shadow-md">
+      <h2 className="text-lg font-bold mb-4">Review for {selectedService?.name}</h2>
+      <label className="block text-sm font-medium mb-2">Rating:</label>
+      <select
+        value={reviewRating}
+        onChange={(e) => setReviewRating(Number(e.target.value))}
+        className="mb-4 w-full border p-2 rounded"
+      >
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <option key={rating} value={rating}>
+            {rating} Stars
+          </option>
+        ))}
+      </select>
+      <label className="block text-sm font-medium mb-2">Comment:</label>
+      <textarea
+        value={reviewText}
+        onChange={(e) => setReviewText(e.target.value)}
+        className="mb-4 w-full border p-2 rounded"
+        placeholder="Write your review here..."
+      ></textarea>
+      <div className="flex justify-end">
+        <button
+          onClick={() => setShowReviewModal(false)}
+          className="mr-2 border px-4 py-2 rounded hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmitReview}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Submit Review
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+</section>
+
+
+
 
         {/* How It Works Section */}
         <section className="mb-16 rounded-2xl bg-white p-8 shadow-sm">

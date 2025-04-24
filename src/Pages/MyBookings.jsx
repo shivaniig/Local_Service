@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   FaCalendarAlt,
   FaClock,
@@ -10,248 +10,190 @@ import {
   FaTimesCircle,
   FaExclamationTriangle,
   FaStar,
-} from "react-icons/fa"
-import { useBooking } from "../Contexts/BookingContext"
-import toast from "react-hot-toast"
-//import "../styles/MyBookings.css"
+} from "react-icons/fa";
+import { useBooking } from "../Contexts/BookingContext";
+import toast from "react-hot-toast";
 
 const MyBookings = () => {
-  const { getUserBookings, updateBookingStatus, addReview, fetchUserBookings } = useBooking()
-  const [bookings, setBookings] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("upcoming")
-  const [showReviewModal, setShowReviewModal] = useState(false)
-  const [selectedBooking, setSelectedBooking] = useState(null)
-  const [reviewData, setReviewData] = useState({
-    rating: 5,
-    comment: "",
-  })
+  const { fetchUserBookings, updateBookingStatus, addReview } = useBooking();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("upcoming");
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [reviewData, setReviewData] = useState({ rating: 5, comment: "" });
 
   useEffect(() => {
     const loadBookings = async () => {
       try {
-        setLoading(true)
-        await fetchUserBookings()
-        const userBookings = getUserBookings()
-        setBookings(userBookings)
+        setLoading(true);
+        const userBookings = await fetchUserBookings();
+        setBookings(userBookings || []);
       } catch (error) {
-        console.error("Error loading bookings:", error)
-        toast.error("Failed to load bookings")
+        console.error("Error loading bookings:", error);
+        toast.error("Failed to load bookings");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadBookings()
-  }, [fetchUserBookings, getUserBookings])
+    loadBookings();
+  }, []);
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case "pending":
-        return (
-          <span className="status-badge pending">
-            <FaExclamationTriangle /> Pending
-          </span>
-        )
-      case "confirmed":
-        return (
-          <span className="status-badge confirmed">
-            <FaCheckCircle /> Confirmed
-          </span>
-        )
-      case "completed":
-        return (
-          <span className="status-badge completed">
-            <FaCheckCircle /> Completed
-          </span>
-        )
-      case "cancelled":
-        return (
-          <span className="status-badge cancelled">
-            <FaTimesCircle /> Cancelled
-          </span>
-        )
-      default:
-        return <span className="status-badge">{status}</span>
-    }
-  }
+    const statusClasses = {
+      pending: "bg-yellow-500 text-white",
+      confirmed: "bg-green-500 text-white",
+      completed: "bg-blue-500 text-white",
+      cancelled: "bg-red-500 text-white",
+    };
+
+    const statusIcons = {
+      pending: <FaExclamationTriangle />,
+      confirmed: <FaCheckCircle />,
+      completed: <FaCheckCircle />,
+      cancelled: <FaTimesCircle />,
+    };
+
+    return (
+      <span className={`px-2 py-1 rounded text-sm flex items-center gap-1 ${statusClasses[status] || "bg-gray-500 text-white"}`}>
+        {statusIcons[status]} {status}
+      </span>
+    );
+  };
 
   const handleCancelBooking = async (bookingId) => {
     if (window.confirm("Are you sure you want to cancel this booking?")) {
       try {
-        await updateBookingStatus(bookingId, "cancelled")
-        toast.success("Booking cancelled successfully")
+        await updateBookingStatus(bookingId, "cancelled");
+        setBookings((prev) =>
+          prev.map((booking) => (booking._id === bookingId ? { ...booking, status: "cancelled" } : booking))
+        );
+        toast.success("Booking cancelled successfully");
       } catch (error) {
-        console.error("Error cancelling booking:", error)
-        toast.error("Failed to cancel booking")
+        console.error("Error cancelling booking:", error);
+        toast.error("Failed to cancel booking");
       }
     }
-  }
+  };
 
   const openReviewModal = (booking) => {
-    setSelectedBooking(booking)
-    setShowReviewModal(true)
-  }
+    setSelectedBooking(booking);
+    setShowReviewModal(true);
+  };
 
   const handleReviewSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!reviewData.comment) {
-      toast.error("Please enter a comment")
-      return
+    if (!reviewData.comment.trim()) {
+      toast.error("Please enter a comment");
+      return;
     }
 
     try {
-      await addReview(selectedBooking._id, reviewData)
-      setShowReviewModal(false)
-      setReviewData({ rating: 5, comment: "" })
+      const updatedBooking = await addReview(selectedBooking._id, reviewData);
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking._id === selectedBooking._id ? { ...booking, review: updatedBooking.review } : booking
+        )
+      );
+      setShowReviewModal(false);
+      setReviewData({ rating: 5, comment: "" });
+      toast.success("Review submitted successfully!");
     } catch (error) {
-      console.error("Error submitting review:", error)
+      console.error("Error submitting review:", error);
+      toast.error("Failed to submit review");
     }
-  }
+  };
 
   const filteredBookings = bookings.filter((booking) => {
-    const bookingDate = new Date(booking.date)
-    const today = new Date()
+    const bookingDate = new Date(booking.date);
+    const today = new Date();
 
     if (activeTab === "upcoming") {
-      return bookingDate >= today && booking.status !== "cancelled"
+      return bookingDate >= today && booking.status !== "cancelled";
     } else if (activeTab === "completed") {
-      return booking.status === "completed"
+      return booking.status === "completed";
     } else if (activeTab === "cancelled") {
-      return booking.status === "cancelled"
+      return booking.status === "cancelled";
     }
 
-    return true
-  })
+    return true;
+  });
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading your bookings...</p>
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin h-10 w-10 border-t-4 border-blue-500 rounded-full"></div>
+        <p className="ml-4 text-lg text-gray-600">Loading your bookings...</p>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="my-bookings-container">
-      <h1>My Bookings</h1>
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">My Bookings</h1>
 
       {/* Tabs */}
-      <div className="booking-tabs">
-        <button onClick={() => setActiveTab("upcoming")} className={activeTab === "upcoming" ? "active" : ""}>
-          Upcoming
-        </button>
-        <button onClick={() => setActiveTab("completed")} className={activeTab === "completed" ? "active" : ""}>
-          Completed
-        </button>
-        <button onClick={() => setActiveTab("cancelled")} className={activeTab === "cancelled" ? "active" : ""}>
-          Cancelled
-        </button>
+      <div className="flex space-x-4 mb-6">
+        {["upcoming", "completed", "cancelled"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 rounded-md ${activeTab === tab ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-700"}`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
       </div>
 
       {filteredBookings.length === 0 ? (
-        <div className="no-bookings">
-          <div className="no-bookings-icon">
-            <FaCalendarAlt />
-          </div>
-          <h2>No bookings found</h2>
-          <p>
-            {activeTab === "upcoming"
-              ? "You don't have any upcoming bookings."
-              : activeTab === "completed"
-                ? "You don't have any completed bookings yet."
-                : "You don't have any cancelled bookings."}
-          </p>
-          <Link to="/dashboard" className="book-service-btn">
+        <div className="text-center">
+          <FaCalendarAlt className="text-4xl text-gray-500 mx-auto" />
+          <h2 className="text-xl font-semibold text-gray-700 mt-4">No bookings found</h2>
+          <Link to="/dashboard" className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md">
             Book a Service
           </Link>
         </div>
       ) : (
-        <div className="bookings-list">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {filteredBookings.map((booking) => (
-            <div key={booking._id} className="booking-card">
-              <div className="booking-header">
-                <div className="booking-service-info">
-                  <div className={`service-icon ${booking.service.color || "blue"}`}>
-                    <span>{booking.service.icon || "🔧"}</span>
-                  </div>
-                  <div>
-                    <h2>{booking.service.name}</h2>
-                    <div className="booking-meta">
-                      <span>Booking ID: {booking._id.substring(0, 8)}</span>
-                      <span className="meta-separator">•</span>
-                      {getStatusBadge(booking.status)}
-                    </div>
-                  </div>
-                </div>
-                <div className="booking-price">
-                  <span>₹{booking.service.price}</span>
-                </div>
+            <div key={booking._id} className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">{booking.service.name}</h2>
+                {getStatusBadge(booking.status)}
               </div>
 
-              <div className="booking-details">
-                <div className="booking-detail">
-                  <FaCalendarAlt />
-                  <div>
-                    <p className="detail-label">Date</p>
-                    <p className="detail-value">
-                      {new Date(booking.date).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="booking-detail">
-                  <FaClock />
-                  <div>
-                    <p className="detail-label">Time</p>
-                    <p className="detail-value">{booking.time}</p>
-                  </div>
-                </div>
-
-                <div className="booking-detail">
-                  <FaMapMarkerAlt />
-                  <div>
-                    <p className="detail-label">Address</p>
-                    <p className="detail-value">{booking.address}</p>
-                  </div>
-                </div>
+              <div className="mt-3 text-gray-700">
+                <p><FaCalendarAlt /> {new Date(booking.date).toLocaleDateString()}</p>
+                <p><FaClock /> {booking.time}</p>
+                <p><FaMapMarkerAlt /> {booking.address}</p>
               </div>
 
               {booking.review && (
-                <div className="booking-review">
-                  <div className="review-header">
-                    <p>Your Review</p>
-                    <div className="review-rating">
-                      {[...Array(5)].map((_, i) => (
-                        <FaStar key={i} className={i < booking.review.rating ? "star-filled" : "star-empty"} />
-                      ))}
-                    </div>
+                <div className="mt-4">
+                  <p className="font-semibold">Your Review:</p>
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <FaStar key={i} className={i < booking.review.rating ? "text-yellow-500" : "text-gray-400"} />
+                    ))}
                   </div>
-                  <p className="review-comment">{booking.review.comment}</p>
+                  <p>{booking.review.comment}</p>
                 </div>
               )}
 
-              <div className="booking-actions">
+              <div className="mt-4 flex space-x-2">
                 {booking.status === "completed" && !booking.review && (
-                  <button onClick={() => openReviewModal(booking)} className="review-btn">
+                  <button onClick={() => openReviewModal(booking)} className="px-3 py-2 bg-green-500 text-white rounded-md">
                     Leave a Review
                   </button>
                 )}
-
                 {booking.status === "pending" && (
-                  <button onClick={() => handleCancelBooking(booking._id)} className="cancel-btn">
+                  <button onClick={() => handleCancelBooking(booking._id)} className="px-3 py-2 bg-red-500 text-white rounded-md">
                     Cancel Booking
                   </button>
                 )}
-
-                <Link to={`/booking-details/${booking._id}`} className="details-btn">
+                <Link to={`/booking-details/${booking._id}`} className="px-3 py-2 bg-blue-600 text-white rounded-md">
                   View Details
                 </Link>
               </div>
@@ -259,52 +201,8 @@ const MyBookings = () => {
           ))}
         </div>
       )}
-
-      {/* Review Modal */}
-      {showReviewModal && selectedBooking && (
-        <div className="modal-overlay">
-          <div className="review-modal">
-            <h2>Leave a Review</h2>
-
-            <div className="rating-input">
-              <label>Rating</label>
-              <div className="star-rating">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setReviewData({ ...reviewData, rating: star })}
-                    className="star-btn"
-                  >
-                    <FaStar className={star <= reviewData.rating ? "star-filled" : "star-empty"} />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="comment-input">
-              <label>Comment</label>
-              <textarea
-                value={reviewData.comment}
-                onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
-                placeholder="Share your experience with this service..."
-                rows="4"
-              ></textarea>
-            </div>
-
-            <div className="modal-actions">
-              <button onClick={() => setShowReviewModal(false)} className="cancel-btn">
-                Cancel
-              </button>
-              <button onClick={handleReviewSubmit} className="submit-btn">
-                Submit Review
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
-  )
-}
+  );
+};
 
-export default MyBookings
+export default MyBookings;

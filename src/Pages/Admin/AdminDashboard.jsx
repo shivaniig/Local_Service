@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link , useNavigate } from "react-router-dom"
 import {
   FaUsers, FaCalendarCheck, FaMoneyBillWave, FaChartLine, FaList, FaTable
 } from "react-icons/fa"
@@ -9,6 +9,7 @@ import axios from "axios"
 import { useAuth } from "../../Contexts/AuthContext"
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth()
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -69,6 +70,16 @@ const AdminDashboard = () => {
             >
               <FaList />
             </button>
+            <button
+          className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={() => {
+            // Add your logout logic here (e.g., clear session, remove token)
+            localStorage.clear(); // Example: Clearing local storage
+            navigate("/"); // Redirect to the home page
+          }}
+        >
+          Logout
+        </button>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const BookingSchema = new mongoose.Schema({
   user: {
@@ -34,32 +34,37 @@ const BookingSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ["online", "cod", null],
+    enum: ["online", "cod"],
     default: null,
   },
   paymentDate: {
     type: Date,
+    default: null,
   },
   paymentId: {
     type: String,
+    default: null,
   },
   review: {
     rating: {
       type: Number,
       min: 1,
       max: 5,
+      default: null,
     },
     comment: {
       type: String,
+      default: null,
     },
     createdAt: {
       type: Date,
+      default: Date.now,
     },
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
-})
+});
 
-module.exports = mongoose.model("Booking", BookingSchema)
+module.exports = mongoose.model("Booking", BookingSchema);

@@ -1,33 +1,30 @@
 import { FaTools, FaUserShield, FaHandshake, FaUsers } from "react-icons/fa"
+import Logo1 from '../assets/LOGO1.png';
 
 const AboutPages = () => {
   const teamMembers = [
     {
       id: 1,
-      name: "Rajesh Kumar",
+      name: "Shivani G Sabharwal",
       position: "Founder & CEO",
-      image: "/placeholder.svg?height=200&width=200",
       bio: "Rajesh has over 15 years of experience in the service industry and founded Fixzy with a vision to transform how home services are delivered.",
     },
     {
       id: 2,
-      name: "Priya Sharma",
+      name: "Avishek and Shivani",
       position: "Operations Manager",
-      image: "/placeholder.svg?height=200&width=200",
       bio: "Priya oversees all service operations and ensures that every customer receives the highest quality service experience.",
     },
     {
       id: 3,
-      name: "Amit Patel",
+      name: "Avishek Prasad",
       position: "Technical Lead",
-      image: "/placeholder.svg?height=200&width=200",
       bio: "Amit leads our technical team and is responsible for developing and maintaining our digital platform.",
     },
     {
       id: 4,
       name: "Neha Gupta",
       position: "Customer Relations",
-      image: "/placeholder.svg?height=200&width=200",
       bio: "Neha ensures that all customer queries and concerns are addressed promptly and effectively.",
     },
   ]
@@ -43,7 +40,7 @@ const AboutPages = () => {
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-indigo-700">Our Story</h2>
           <p className="mb-4">
-            Founded in 2018, Fixzy started with a simple mission: to make home services accessible, affordable, and reliable for everyone. What began as a small team of dedicated professionals has now grown into a network of over 500 service providers across Mumbai.
+            Founded in 2025, Fixzy started with a simple mission: to make home services accessible, affordable, and reliable for everyone. What began as a small team of dedicated professionals has now grown into a network of over 500 service providers across Mumbai.
           </p>
           <p className="mb-4">
             We understand the challenges of finding trustworthy professionals for your home service needs. That's why we've built a platform that connects you with verified experts who deliver quality work, every time.
@@ -52,7 +49,9 @@ const AboutPages = () => {
             Today, Fixzy is one of the leading home service providers in Mumbai, serving thousands of satisfied customers. Our commitment to excellence and customer satisfaction remains at the core of everything we do.
           </p>
         </div>
-        <img src="/placeholder.svg?height=400&width=600" alt="Fixzy Team" className="rounded-xl shadow-lg" />
+        <img src={Logo1} alt="Fixzy Team" className="rounded-full shadow-lg" />
+
+
       </section>
 
       <section className="mb-16 text-center">
@@ -94,11 +93,6 @@ const AboutPages = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {teamMembers.map((member) => (
             <div key={member.id} className="bg-white p-6 rounded-xl shadow-md text-center">
-              <img
-                src={member.image}
-                alt={member.name}
-                className="w-24 h-24 mx-auto mb-4 rounded-full object-cover"
-              />
               <h3 className="font-bold text-lg text-indigo-800">{member.name}</h3>
               <p className="text-sm font-medium text-gray-500">{member.position}</p>
               <p className="text-sm text-gray-600 mt-2">{member.bio}</p>
