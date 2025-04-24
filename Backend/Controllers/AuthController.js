@@ -13,14 +13,14 @@ exports.protect = asyncHandler(async (req, res, next) => {
   // Extract token from Authorization header (Bearer <token>)
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
+    req.headers.authorization.startsWith("Bearer")
   ) {
-    token = req.headers.authorization.split(' ')[1];
+    token = req.headers.authorization.split(" ")[1];
   }
 
   // If token is not found
   if (!token) {
-    return next(new ErrorResponse('Not authorized to access this route', 401));
+    return next(new ErrorResponse("Not authorized to access this route", 401));
   }
 
   try {
@@ -29,15 +29,15 @@ exports.protect = asyncHandler(async (req, res, next) => {
     const userId = decoded.userId;
     const user = await User.findById(userId);
     if (!user) {
-      return next(new ErrorResponse('User not found', 404));
+      return next(new ErrorResponse("User not found", 404));
     }
 
     // Attach user to request
     req.user = user;
     next();
   } catch (err) {
-    console.error('Token verification failed:', err.message);
-    return next(new ErrorResponse('Not authorized to access this route', 401));
+    console.error("Token verification failed:", err.message);
+    return next(new ErrorResponse("Not authorized to access this route", 401));
   }
 });
 
@@ -49,13 +49,13 @@ exports.register = asyncHandler(async (req, res, next) => {
 
   // Validate role
   if (!role || !["user", "admin", "moderator"].includes(role)) {
-    return next(new ErrorResponse('Please specify a valid role', 400));
+    return next(new ErrorResponse("Please specify a valid role", 400));
   }
 
   // Check if user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
-    return next(new ErrorResponse('User already exists', 400));
+    return next(new ErrorResponse("User already exists", 400));
   }
 
   // Create user
@@ -110,7 +110,8 @@ exports.login = asyncHandler(async (req, res, next) => {
 // @route   GET /api/auth/me
 // @access  Private
 exports.getMe = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user._id); // Access user ID from request (populated by `protect` middleware)
+  const user = await User.findOne(req.user._id);
+
 
   if (!user) {
     return res.status(404).json({
