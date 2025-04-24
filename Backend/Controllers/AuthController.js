@@ -89,7 +89,8 @@ exports.login = asyncHandler(async (req, res, next) => {
 // @route   GET /api/auth/me
 // @access  Private
 exports.getMe = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user._id); // Access user ID from request (populated by `protect` middleware)
+  const user = await User.findOne(req.user._id);
+
 
   if (!user) {
     return res.status(404).json({
