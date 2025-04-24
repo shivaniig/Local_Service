@@ -1,296 +1,110 @@
-"use client"
+// src/pages/Admin/AdminServices.jsx
 
-import { useState, useEffect } from "react"
-import { FaPlus, FaEdit, FaTrash, FaSearch } from "react-icons/fa"
-import axios from "axios"
-import toast from "react-hot-toast"
-import { API_URL, SERVICE_CATEGORIES } from "../../Config/Constants"
-//import "../../styles/AdminServices.css"
+"use client";
+
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { API_URL } from "../../Config/Constants";
 
 const AdminServices = () => {
-  const [services, setServices] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [modalMode, setModalMode] = useState("add") // "add" or "edit"
-  const [selectedService, setSelectedService] = useState(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterCategory, setFilterCategory] = useState("all")
-
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "home",
-    image: "",
-    isActive: true,
-  })
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchServices()
-  }, [])
-
-  const fetchServices = async () => {
-    try {
-      setLoading(true)
-      const response = await axios.get("http://localhost:8080/api/services/admin")
-      setServices(response.data.services)
-    } catch (error) {
-      console.error("Error fetching services:", error)
-      toast.error("Failed to load services")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    })
-  }
-
-  const openAddModal = () => {
-    setFormData({
-      name: "",
-      description: "",
-      price: "",
-      category: "home",
-      image: "",
-      isActive: true,
-    })
-    setModalMode("add")
-    setShowModal(true)
-  }
-
-  const openEditModal = (service) => {
-    setSelectedService(service)
-    setFormData({
-      name: service.name,
-      description: service.description,
-      price: service.price,
-      category: service.category,
-      image: service.image,
-      isActive: service.isActive,
-    })
-    setModalMode("edit")
-    setShowModal(true)
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    try {
-      if (modalMode === "add") {
-        const response = await axios.post(`${VITE_API_URL}/api/services`, formData)
-        setServices([...services, response.data.service])
-        toast.success("Service added successfully")
-      } else {
-        const response = await axios.put(`${VITE_API_URL}/api/services/${selectedService._id}`, formData)
-        setServices(services.map((s) => (s._id === selectedService._id ? response.data.service : s)))
-        toast.success("Service updated successfully")
+    const fetchServices = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/admin/services`);
+        setServices(res.data.services);
+      } catch (err) {
+        console.error("Error fetching services", err);
+      } finally {
+        setLoading(false);
       }
-      setShowModal(false)
-    } catch (error) {
-      console.error("Error saving service:", error)
-      toast.error(error.response?.data?.message || "Failed to save service")
-    }
-  }
+    };
 
-  const handleDeleteService = async (serviceId) => {
+    fetchServices();
+  }, []);
+
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this service?")) {
       try {
-        await axios.delete(`${VITE_API_URL}/api/services/${serviceId}`)
-        setServices(services.filter((service) => service._id !== serviceId))
-        toast.success("Service deleted successfully")
-      } catch (error) {
-        console.error("Error deleting service:", error)
-        toast.error("Failed to delete service")
+        await axios.delete(`${API_URL}/api/admin/services/${id}`);
+        setServices((prev) => prev.filter((s) => s._id !== id));
+      } catch (err) {
+        console.error("Error deleting service", err);
       }
     }
-  }
-
-  const filteredServices = services.filter((service) => {
-    const matchesSearch =
-      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = filterCategory === "all" || service.category === filterCategory
-
-    return matchesSearch && matchesCategory
-  })
+  };
 
   if (loading) {
     return (
-      <div className="admin-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading services...</p>
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500 border-solid"></div>
+        <span className="ml-4 text-lg text-gray-600">Loading services...</span>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="admin-services">
-      <div className="admin-header">
-        <h1>Manage Services</h1>
-        <button className="add-service-btn" onClick={openAddModal}>
-          <FaPlus /> Add New Service
-        </button>
+    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-0">
+          Manage Services
+        </h1>
+        <Link
+          to="/admin/services/new"
+          className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+        >
+          <FaPlus />
+          Add Service
+        </Link>
       </div>
 
-      <div className="filters-container">
-        <div className="search-container">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search services..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-        </div>
-
-        <div className="category-filter">
-          <label>Category:</label>
-          <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-            {SERVICE_CATEGORIES.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {filteredServices.length === 0 ? (
-        <div className="no-services">
-          <p>No services found matching your criteria.</p>
-        </div>
-      ) : (
-        <div className="services-table-container">
-          <table className="services-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Rating</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredServices.map((service) => (
-                <tr key={service._id}>
-                  <td>
-                    <div className="service-name-cell">
-                      <div className="service-icon">{service.icon || "🔧"}</div>
-                      <div>
-                        <div className="service-name">{service.name}</div>
-                        <div className="service-description">{service.description.substring(0, 50)}...</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>{service.category}</td>
-                  <td>₹{service.price}</td>
-                  <td>
-                    <div className="rating">
-                      <span className="stars">{"★".repeat(Math.floor(service.rating))}</span>
-                      <span className="rating-value">({service.rating})</span>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`status-badge ${service.isActive ? "active" : "inactive"}`}>
-                      {service.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="edit-btn" onClick={() => openEditModal(service)}>
-                        <FaEdit />
-                      </button>
-                      <button className="delete-btn" onClick={() => handleDeleteService(service._id)}>
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Add/Edit Service Modal */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="service-modal">
-            <h2>{modalMode === "add" ? "Add New Service" : "Edit Service"}</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Service Name</label>
-                <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
-              </div>
-
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  required
-                ></textarea>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Price (₹)</label>
-                  <input type="number" name="price" value={formData.price} onChange={handleInputChange} required />
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {services.map((service) => (
+          <div
+            key={service._id}
+            className="bg-white rounded-xl shadow p-4 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center space-x-3 mb-3">
+                <div
+                  className={`text-2xl p-2 rounded-full text-white ${
+                    service.color || "bg-blue-500"
+                  }`}
+                >
+                  {service.icon || "🛠"}
                 </div>
-
-                <div className="form-group">
-                  <label>Category</label>
-                  <select name="category" value={formData.category} onChange={handleInputChange}>
-                    <option value="home">Home Services</option>
-                    <option value="appliance">Appliance Repair</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="cleaning">Cleaning</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
+                <h2 className="text-xl font-semibold">{service.name}</h2>
               </div>
-
-              <div className="form-group">
-                <label>Image URL</label>
-                <input
-                  type="text"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleInputChange}
-                  placeholder="Enter image URL or leave blank for default"
-                />
-              </div>
-
-              <div className="form-group checkbox-group">
-                <label>
-                  <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleInputChange} />
-                  Active
-                </label>
-              </div>
-
-              <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="save-btn">
-                  {modalMode === "add" ? "Add Service" : "Update Service"}
-                </button>
-              </div>
-            </form>
+              <p className="text-gray-600 mb-2">{service.description}</p>
+              <p className="text-sm text-gray-800 font-medium">
+                Price: ₹{service.price}
+              </p>
+            </div>
+            <div className="flex justify-end space-x-2 mt-4">
+              <Link
+                to={`/admin/services/edit/${service._id}`}
+                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm flex items-center gap-1"
+              >
+                <FaEdit />
+                Edit
+              </Link>
+              <button
+                onClick={() => handleDelete(service._id)}
+                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm flex items-center gap-1"
+              >
+                <FaTrash />
+                Delete
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminServices
+export default AdminServices;

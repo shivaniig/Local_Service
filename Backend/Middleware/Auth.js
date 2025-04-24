@@ -21,7 +21,6 @@ exports.authenticateToken = async (req, res, next) => {
     res.status(403).json({ message: 'Token is invalid or expired' });
   }
 };
-
 // Middleware to protect routes
 exports.protect = asyncHandler(async (req, res, next) => {
   let token;

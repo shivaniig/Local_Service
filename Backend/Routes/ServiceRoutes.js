@@ -1,71 +1,83 @@
 const express = require('express');
 const router = express.Router();
-
-// Dummy data for services (You can replace this with database logic later)
-let services = [
-  { id: 1, name: 'House Cleaning', description: 'Complete house cleaning services', price: 100 },
-  { id: 2, name: 'Plumbing', description: 'Expert plumbing services', price: 150 },
-  { id: 3, name: 'Electrician', description: 'Certified electricians for your needs', price: 120 }
-];
+const Service = require('../models/Service');
 
 // @route   GET /api/services
 // @desc    Get all available services
-router.get('/services', (req, res) => {
-  res.status(200).json(services);
+router.get('/', async (req, res) => {
+  try {
+    const services = await Service.find();
+    res.status(200).json(services);
+  } catch (err) {
+    console.error('Error fetching services:', err.message);
+    res.status(500).json({ message: 'Server error while fetching services.' });
+  }
 });
 
 // @route   POST /api/services
 // @desc    Add a new service
-router.post('/services', (req, res) => {
-  const { name, description, price } = req.body;
+router.post('/', async (req, res) => {
+  const { name, description, icon, color, rating, reviews, price, image } = req.body;
 
   if (!name || !description || !price) {
-    return res.status(400).json({ message: 'Please provide all required fields.' });
+    return res.status(400).json({ message: 'Please provide name, description, and price.' });
   }
 
-  const newService = {
-    id: services.length + 1, // Auto-incrementing ID
-    name,
-    description,
-    price
-  };
+  try {
+    const newService = new Service({
+      name,
+      description,
+      icon,
+      color,
+      rating,
+      reviews,
+      price,
+      image
+    });
 
-  services.push(newService);
-  res.status(201).json(newService);
+    const savedService = await newService.save();
+    res.status(201).json(savedService);
+  } catch (err) {
+    console.error('Error adding service:', err.message);
+    res.status(500).json({ message: 'Server error while adding service.' });
+  }
 });
 
 // @route   PUT /api/services/:id
 // @desc    Update an existing service
-router.put('/services/:id', (req, res) => {
-  const { id } = req.params;
-  const { name, description, price } = req.body;
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedService = await Service.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
 
-  const service = services.find(s => s.id == id);
+    if (!updatedService) {
+      return res.status(404).json({ message: 'Service not found.' });
+    }
 
-  if (!service) {
-    return res.status(404).json({ message: 'Service not found.' });
+    res.status(200).json(updatedService);
+  } catch (err) {
+    console.error('Error updating service:', err.message);
+    res.status(500).json({ message: 'Server error while updating service.' });
   }
-
-  if (name) service.name = name;
-  if (description) service.description = description;
-  if (price) service.price = price;
-
-  res.status(200).json(service);
 });
 
 // @route   DELETE /api/services/:id
 // @desc    Delete a service
-router.delete('/services/:id', (req, res) => {
-  const { id } = req.params;
+router.delete('/:id', async (req, res) => {
+  try {
+    const deletedService = await Service.findByIdAndDelete(req.params.id);
 
-  const index = services.findIndex(s => s.id == id);
+    if (!deletedService) {
+      return res.status(404).json({ message: 'Service not found.' });
+    }
 
-  if (index === -1) {
-    return res.status(404).json({ message: 'Service not found.' });
+    res.status(200).json({ message: 'Service deleted successfully.' });
+  } catch (err) {
+    console.error('Error deleting service:', err.message);
+    res.status(500).json({ message: 'Server error while deleting service.' });
   }
-
-  services.splice(index, 1); // Remove service by ID
-  res.status(200).json({ message: 'Service deleted successfully.' });
 });
 
 module.exports = router;

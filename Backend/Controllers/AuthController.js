@@ -2,71 +2,50 @@ const User = require("../Models/User");
 const asyncHandler = require("../Middleware/Async");
 const ErrorResponse = require("../Utils/ErrorResponse");
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
 
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
-exports.protect = asyncHandler(async (req, res, next) => {
+exports.protect = async (req, res, next) => {
   let token;
 
-  // Extract token from Authorization header (Bearer <token>)
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
+  // Check if the token exists in the Authorization header
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    token = req.headers.authorization.split(" ")[1];
   }
 
-  // If token is not found
   if (!token) {
-    return next(new ErrorResponse('Not authorized to access this route', 401));
+    return res.status(401).json({ message: "Not authorized, no token" });
   }
 
   try {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
-    const user = await User.findById(userId);
-    if (!user) {
-      return next(new ErrorResponse('User not found', 404));
+    
+    // Get user based on decoded ID
+    req.user = await User.findById(decoded.id);
+    if (!req.user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Attach user to request
-    req.user = user;
-    next();
-  } catch (err) {
-    console.error('Token verification failed:', err.message);
-    return next(new ErrorResponse('Not authorized to access this route', 401));
+    next(); // Proceed to the next middleware or route handler
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    res.status(401).json({ message: "Not authorized, invalid token" });
   }
-});
-
-// @desc    Register user
-// @route   POST /api/auth/register
-// @access  Public
+};
 exports.register = asyncHandler(async (req, res, next) => {
   const { name, email, password, role } = req.body;
-
-  // Validate role
-  if (!role || !["user", "admin", "moderator"].includes(role)) {
-    return next(new ErrorResponse('Please specify a valid role', 400));
-  }
-
-  // Check if user already exists
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    return next(new ErrorResponse('User already exists', 400));
-  }
 
   // Create user
   const user = await User.create({
     name,
     email,
     password,
-    role, // Include role here
+    role,
   });
 
-  sendTokenResponse(user, 201, res); // You need to define the sendTokenResponse function
+  sendTokenResponse(user, 201, res);
 });
 
 // @desc    Login user
