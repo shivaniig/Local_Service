@@ -45,7 +45,6 @@ mongoose
 // Routes Setup
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes); // ✅ Changed from /api/users to /api/user
-app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/payments", paymentRoutes);
 
@@ -57,13 +56,13 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+// Fetch All Services
 app.get("/api/services", async (req, res) => {
   try {
     const services = await Service.find();
-    res.status(200).json({ success: true, services });
+    res.status(200).json(services);
   } catch (err) {
-    console.error("Error fetching services:", err);
-    res.status(500).json({ success: false, message: "Server error fetching services", error: err.message });
+    res.status(500).json({ error: "Failed to fetch services" });
   }
 });
 
@@ -128,7 +127,6 @@ app.use((err, req, res, next) => {
   
   
 });
-
 
 // Start Server
 const PORT = process.env.PORT || 8080;

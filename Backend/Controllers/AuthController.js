@@ -6,8 +6,6 @@ const jwt = require("jsonwebtoken");
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
-
-
 exports.protect = async (req, res, next) => {
   let token;
 
