@@ -13,7 +13,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please add an email"],
     unique: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please add a valid email"],
+    match: [
+      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 
+      "Please add a valid email"
+    ],
   },
   password: {
     type: String,
@@ -28,29 +31,28 @@ const UserSchema = new mongoose.Schema({
   },
   address: {
     type: String,
-    default: "", // Default empty string, updated later
+    default: "",
   },
 });
 
-// Encrypt password using bcrypt
+// Encrypt password using bcrypt before saving
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
-
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Match password in the User model
+// Match user entered password to hashed password in database
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
 // Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function () {
-  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET || "fixzy_secret_key", {
-    expiresIn: process.env.JWT_EXPIRE || "30d",
+  return jwt.sign({ userId: this._id }, process.env.JWT_SECRET, {
+    expiresIn: "1d",
   });
 };
 

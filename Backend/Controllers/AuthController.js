@@ -89,10 +89,8 @@ exports.login = asyncHandler(async (req, res, next) => {
 // @route   GET /api/auth/me
 // @access  Private
 exports.getMe = asyncHandler(async (req, res, next) => {
-  const user = await User.findOne(req.user._id);
-
-
-  if (!user) {
+  // No need to query DB again — we already have user in req.user
+  if (!req.user) {
     return res.status(404).json({
       success: false,
       message: "User not found",
@@ -101,9 +99,10 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    user,
+    user: req.user,
   });
 });
+
 
 // Helper function to get token from model, create cookie, and send response
 const sendTokenResponse = (user, statusCode, res) => {
